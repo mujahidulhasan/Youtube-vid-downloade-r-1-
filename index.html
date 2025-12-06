@@ -3,124 +3,141 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>YouTube Downloader (RapidAPI) — Full Version</title>
+<title>YouTube Downloader — Full RapidAPI Debug Version</title>
+
 <style>
   :root{--bg:#071428;--card:#071a2b;--accent:#06b6d4;--muted:#9fb6c8}
   body{margin:0;font-family:system-ui,Segoe UI,Roboto;background:linear-gradient(180deg,#041025,#071429);color:#e8f7fb;padding:14px}
   .wrap{max-width:920px;margin:0 auto}
-  .card{background:var(--card);padding:14px;border-radius:12px;box-shadow:0 8px 30px rgba(2,6,23,0.6)}
-  h1{margin:0 0 6px;font-size:19px}
+  .card{background:var(--card);padding:14px;border-radius:14px;box-shadow:0 8px 30px rgba(2,6,23,0.6)}
+  h1{margin:0 0 6px;font-size:20px}
   p.lead{margin:0;color:var(--muted);font-size:13px}
-  label{display:block;margin-top:14px;color:var(--muted);font-size:13px}
-  input[type=url], input[type=text]{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.05);background:transparent;color:inherit}
+  label{display:block;margin-top:12px;color:var(--muted);font-size:13px}
+  input[type=url], input[type=text]{
+    width:100%;padding:10px;border-radius:8px;
+    border:1px solid rgba(255,255,255,0.07);
+    background:transparent;color:inherit;
+  }
   .row{display:flex;gap:8px;margin-top:8px}
   .btn{background:var(--accent);color:#022;padding:10px 12px;border-radius:8px;border:0;cursor:pointer;font-weight:700}
-  .btn.sec{background:transparent;border:1px solid rgba(255,255,255,0.05);color:var(--muted)}
-  .notice{font-size:13px;color:var(--muted);margin-top:8px}
-  .result{margin-top:16px;display:grid;gap:10px}
-  .media{display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:10px;background:rgba(255,255,255,0.04)}
-  .media .left{max-width:66%}
-  a.link{padding:8px 10px;border-radius:7px;background:rgba(6,182,212,0.15);color:#cfefff;text-decoration:none;font-weight:600}
-  img.thumb{width:100%;max-width:160px;border-radius:8px}
+  .btn.sec{background:transparent;border:1px solid rgba(255,255,255,0.07);color:var(--muted)}
+  .notice{font-size:13px;color:var(--muted);margin-top:10px}
+  .result{margin-top:16px;display:grid;gap:12px}
+  .media{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:12px;border-radius:10px;background:rgba(255,255,255,0.04)
+  }
+  .media .left{max-width:70%}
+  a.link{
+    padding:8px 10px;border-radius:7px;
+    background:rgba(6,182,212,0.18);color:#cfefff;
+    text-decoration:none;font-weight:600
+  }
+  img.thumb{max-width:160px;border-radius:8px}
+  pre.raw{
+    white-space:pre-wrap;background:#02121a;color:#9fe;
+    padding:12px;border-radius:10px;margin-top:12px
+  }
   @media(max-width:600px){
-     .row{flex-direction:column}
-     .media{flex-direction:column;align-items:flex-start}
-     a.link{margin-top:6px;display:block}
+    .row{flex-direction:column}
+    .media{flex-direction:column;align-items:flex-start}
+    a.link{margin-top:8px;display:block}
   }
 </style>
 </head>
+
 <body>
-  <div class="wrap">
-    <div class="card">
-      <h1>YouTube Downloader (RapidAPI)</h1>
-      <p class="lead">Paste API key → paste YouTube URL → click Fetch → get direct download links.</p>
+<div class="wrap">
+  <div class="card">
+    <h1>YouTube Downloader (RapidAPI)</h1>
+    <p class="lead">Paste API key → YouTube URL → Fetch → Debug + Download links appear.</p>
 
-      <!-- API KEY INPUT -->
-      <label>RapidAPI Key</label>
-      <div class="row">
-        <input id="apiKey" type="text" placeholder="Paste RapidAPI key here" />
-        <button id="saveKey" class="btn sec">Save</button>
-      </div>
+    <label>RapidAPI Key</label>
+    <div class="row">
+      <input id="apiKey" type="text" placeholder="Paste your RapidAPI key here" />
+      <button id="saveKey" class="btn sec">Save</button>
+    </div>
 
-      <!-- VIDEO URL INPUT -->
-      <label>YouTube URL / Video ID</label>
-      <div class="row">
-        <input id="videoInput" type="url" placeholder="https://www.youtube.com/watch?v=..." />
-        <button id="fetchBtn" class="btn">Fetch</button>
-      </div>
+    <label>YouTube URL or Video ID</label>
+    <div class="row">
+      <input id="videoInput" type="url" placeholder="https://www.youtube.com/watch?v=..." />
+      <button id="fetchBtn" class="btn">Fetch</button>
+    </div>
 
-      <div id="status" class="notice"></div>
-      <div id="info" class="result"></div>
+    <div id="status" class="notice"></div>
+    <div id="info" class="result"></div>
 
-      <div class="notice" style="margin-top:12px">
-        ⚠ শিখার উদ্দেশ্যে — API key কখনো public-এ শেয়ার করবেন না।
-      </div>
+    <div class="notice">
+      ⚠ API key কখনো public-এ শেয়ার করবেন না — শুধুমাত্র শিখার উদ্দেশ্যে ব্যবহার করুন।
     </div>
   </div>
+</div>
+
 
 <script>
 const API_HOST = "youtube-media-downloader.p.rapidapi.com";
-const API_URL = "https://" + API_HOST + "/v2/video/details";
+const API_URL  = "https://" + API_HOST + "/v2/video/details";
 
+// UI elements
+const apiKeyEl   = document.getElementById("apiKey");
 const videoInput = document.getElementById("videoInput");
-const apiKeyEl = document.getElementById("apiKey");
 const saveKeyBtn = document.getElementById("saveKey");
-const fetchBtn = document.getElementById("fetchBtn");
-const statusEl = document.getElementById("status");
-const infoEl = document.getElementById("info");
+const fetchBtn   = document.getElementById("fetchBtn");
+const statusEl   = document.getElementById("status");
+const infoEl     = document.getElementById("info");
 
-// Load key (if saved)
+// Load key from localStorage
 if(localStorage.getItem("rapid_key"))
     apiKeyEl.value = localStorage.getItem("rapid_key");
 
 // Save key
 saveKeyBtn.addEventListener("click", ()=>{
-  let k = apiKeyEl.value.trim();
-  if(!k) return alert("Paste your API key first!");
+  const k = apiKeyEl.value.trim();
+  if(!k) return alert("Paste your API key");
   localStorage.setItem("rapid_key", k);
-  status("API key saved locally.");
+  status("API key saved.");
 });
 
-// Fetch button
+// Fetch Click
 fetchBtn.addEventListener("click", ()=> {
   const url = videoInput.value.trim();
-  if(!url) return alert("Paste video URL or ID");
+  if(!url) return alert("Paste a YouTube URL or ID");
 
   const key = localStorage.getItem("rapid_key") || apiKeyEl.value.trim();
-  if(!key) return alert("API key missing.");
+  if(!key) return alert("API key missing!");
 
-  const videoId = extractID(url);
-  if(!videoId) return alert("Invalid YouTube URL / ID");
+  const vid = extractID(url);
+  if(!vid) return alert("Invalid YouTube URL / ID");
 
-  fetchVideo(videoId, key);
+  fetchVideo(vid, key);
 });
 
 function status(msg){ statusEl.textContent = msg; }
 function clear(){ infoEl.innerHTML = ""; status(""); }
 
-// Extract video ID
+// Extract YouTube ID
 function extractID(x){
   if(/^[A-Za-z0-9_-]{8,}$/.test(x) && !x.includes("/")) return x;
-  try {
+  try{
     const u = new URL(x);
     if(u.hostname.includes("youtu.be")) return u.pathname.slice(1);
     if(u.hostname.includes("youtube.com")){
       const v = u.searchParams.get("v");
       if(v) return v;
-      const parts = u.pathname.split("/");
-      const i = parts.indexOf("embed");
-      if(i>=0 && parts[i+1]) return parts[i+1];
+      const p = u.pathname.split("/");
+      const i = p.indexOf("embed");
+      if(i>=0 && p[i+1]) return p[i+1];
     }
-  } catch(e){}
+  }catch(e){}
   return null;
 }
 
-// Fetch API
+// Fetch API with debug
 async function fetchVideo(videoId, key){
   clear();
-  status("Fetching info...");
+  status("Fetching…");
 
-  const query = new URLSearchParams({
+  const q = new URLSearchParams({
     videoId: videoId,
     urlAccess: "normal",
     videos: "auto",
@@ -128,7 +145,7 @@ async function fetchVideo(videoId, key){
   });
 
   try{
-    const r = await fetch(API_URL + "?" + query.toString(), {
+    const r = await fetch(API_URL + "?" + q.toString(), {
       method: "GET",
       headers: {
         "x-rapidapi-host": API_HOST,
@@ -136,28 +153,44 @@ async function fetchVideo(videoId, key){
       }
     });
 
-    const txt = await r.text();
+    const rawText = await r.text();
+
     let data;
-    try { data = JSON.parse(txt); }
-    catch { data = txt; }
+    try { data = JSON.parse(rawText); }
+    catch { data = rawText; }
 
-    console.log("FULL API RESPONSE:", data);
+    console.log("RAW API RESPONSE:", data);
 
-    display(data);
+    // Show raw debug box
+    const pre = document.createElement("pre");
+    pre.className = "raw";
+    pre.textContent = typeof data === "string" ? data : JSON.stringify(data, null, 2);
+    infoEl.appendChild(pre);
+
+    // Friendly UI
+    const holder = document.createElement("div");
+    holder.style.marginTop = "14px";
+    infoEl.appendChild(holder);
+
+    display(data, holder);
     status("Done.");
-  }
-  catch(e){
-    status("Error: " + e.message);
+
+  } catch(e){
+    status("Error: "+e.message);
     infoEl.innerHTML = "<div style='color:#f88'>Fetch failed: "+e.message+"</div>";
   }
 }
 
-// Render response
-function display(data){
-  infoEl.innerHTML = "";
+// Main renderer
+function display(data, container){
+  if(!data || typeof data !== "object"){
+    container.innerHTML = `<div style="color:#faa">Invalid response.</div>`;
+    return;
+  }
 
+  // Header (title + thumbnail)
   const title = data.title || data.name || "Unknown title";
-  const thumb = data.thumbnail || data.thumb || "";
+  const thumb = data.thumbnail || "";
   const author = data.author || data.uploader || "";
   const dur = data.duration || "-";
 
@@ -173,75 +206,83 @@ function display(data){
   }
 
   const meta = document.createElement("div");
-  meta.innerHTML =
-    `<div style="font-weight:700">${title}</div>
-     <div style="color:#9fb6c8;font-size:13px">${author}</div>
-     <div style="color:#9fb6c8;font-size:12px;margin-top:6px">Duration: ${dur} sec</div>`;
+  meta.innerHTML = `
+    <div style="font-weight:700">${escape(title)}</div>
+    <div style="color:#9fb6c8;font-size:13px">${escape(author)}</div>
+    <div style="color:#9fb6c8;font-size:12px;margin-top:6px">Duration: ${dur} sec</div>`;
   head.appendChild(meta);
 
-  infoEl.appendChild(head);
+  container.appendChild(head);
 
-  // Try all possible fields
-  const lists = [
-    data.medias,
-    data.formats,
-    data.streams,
-    data.results,
-    data.downloads,
-    data.videoStreams,
-    data.audioStreams
-  ].filter(x => Array.isArray(x) && x.length);
+  // Possible array fields
+  const possible = [
+    "medias","formats","streams","results",
+    "downloads","videoStreams","audioStreams"
+  ];
 
-  // Direct single-url fallback
-  const single =
-    data.url ||
-    data.videoUrl ||
-    data.downloadUrl ||
-    data.source ||
-    null;
+  const arrays = possible
+    .map(k => ({ key:k, list:data[k] }))
+    .filter(x => Array.isArray(x.list) && x.list.length);
 
-  if(single){
-    infoEl.innerHTML += `
-      <div class="media">
+  // direct single URL fields
+  const direct =
+    data.url || data.videoUrl || data.downloadUrl || data.source || null;
+
+  if(direct){
+    container.innerHTML += `
+      <div class="media" style="margin-top:12px">
         <div class="left"><b>Direct Link</b></div>
-        <a class="link" target="_blank" href="${single}">Download</a>
+        <a class="link" target="_blank" href="${escapeAttr(direct)}">Download</a>
       </div>`;
   }
 
-  if(lists.length===0 && !single){
-    infoEl.innerHTML += `<div style="color:#faa;margin-top:12px">
-       No downloadable media found. Check console for API response.
-    </div>`;
+  if(arrays.length === 0 && !direct){
+    container.innerHTML += `
+      <div style="color:#faa;margin-top:12px">
+        No downloadable media found.<br>
+        See RAW JSON above — look for: url, downloadUrl, streamUrl, source.
+      </div>`;
     return;
   }
 
-  lists.forEach(list=>{
-    list.forEach(m => {
-      const url =
-        m.url || m.downloadUrl || m.source || m.streamUrl || m.link;
+  // Render each array
+  arrays.forEach(({key, list})=>{
+    const h = document.createElement("div");
+    h.style.marginTop = "14px";
+    h.style.fontWeight = "700";
+    h.textContent = `Found list: ${key} (${list.length})`;
+    container.appendChild(h);
 
-      const q = m.quality || m.quality_label || m.format_note || "";
-      const ext = m.ext || m.extension || "";
-      const size = m.data_size || m.filesize || m.size || "";
+    list.forEach(item=>{
+      const url =
+        item.url || item.downloadUrl || item.streamUrl ||
+        item.source || item.mediaUrl || item.link;
+
+      const q = item.quality || item.format_note ||
+                item.quality_label || item.format || "unknown";
+
+      const ext = item.ext || item.extension || "";
+      const size = item.filesize || item.data_size || item.size || null;
 
       const div = document.createElement("div");
       div.className = "media";
-
       div.innerHTML = `
         <div class="left">
-          <div style="font-weight:700">${q} ${ext?("• "+ext):""}</div>
+          <div style="font-weight:700">${escape(q)} ${ext?("• "+escape(ext)):""}</div>
           <div style="color:#9fb6c8;font-size:13px">
-             ${size? (Math.round(size/1024/1024)+' MB') : ''}
+            ${size ? (Math.round(size/1024/1024)+" MB") : ""}
           </div>
         </div>
-        ${url ? `<a class="link" target="_blank" href="${url}">Download</a>`
-              : `<span style="color:#999">No URL</span>`}
+        ${url ? `<a class="link" target="_blank" href="${escapeAttr(url)}">Download</a>`
+              : `<span style="color:#777">No URL</span>`}
       `;
-
-      infoEl.appendChild(div);
+      container.appendChild(div);
     });
   });
 }
+
+function escape(s){ return String(s||'').replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+function escapeAttr(s){ return String(s||'').replace(/"/g,"&quot;"); }
 </script>
 
 </body>
