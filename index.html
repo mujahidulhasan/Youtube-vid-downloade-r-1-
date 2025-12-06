@@ -1,298 +1,453 @@
 <!doctype html>
 <html lang="bn">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>YouTube Downloader — RapidAPI (Final Version)</title>
-
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>YouTube Downloader — Clean UI</title>
 <style>
-  :root{--bg:#071428;--card:#071a2b;--accent:#06b6d4;--muted:#9fb6c8}
+  :root{
+    --bg:#071428; --card:#071a2b; --accent:#06b6d4; --muted:#9fb6c8;
+    --glass: rgba(255,255,255,0.02);
+  }
+  *{box-sizing:border-box}
   body{
-    margin:0;font-family:system-ui,Segoe UI,Roboto;
-    background:linear-gradient(180deg,#041025,#071429);
-    color:#e8f7fb;padding:14px
+    margin:0; font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    background:linear-gradient(180deg,#021027,#06142a); color:#eaf6fb; padding:14px;
   }
   .wrap{max-width:920px;margin:0 auto}
-  .card{
-    background:var(--card);padding:14px;border-radius:14px;
-    box-shadow:0 8px 30px rgba(2,6,23,0.6)
+  .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:14px; padding:14px; box-shadow:0 8px 30px rgba(2,6,23,0.6)}
+  h1{margin:0;font-size:18px}
+  p.lead{margin:6px 0 12px;color:var(--muted);font-size:13px}
+  label{display:block;margin-top:10px;color:var(--muted);font-size:13px}
+  input[type=text], input[type=url]{
+    width:100%; padding:10px 12px; border-radius:10px; border:1px solid rgba(255,255,255,0.04);
+    background:transparent; color:inherit; font-size:14px;
   }
-  h1{margin:0 0 6px;font-size:20px}
-  p.lead{margin:0;color:var(--muted);font-size:13px}
-  label{display:block;margin-top:12px;color:var(--muted);font-size:13px}
-  input[type=url], input[type=text]{
-    width:100%;padding:10px;border-radius:8px;
-    border:1px solid rgba(255,255,255,0.07);
-    background:transparent;color:inherit;
-  }
-  .row{display:flex;gap:8px;margin-top:8px}
+  .row{display:flex;gap:8px;align-items:center}
+  .row.col{flex-direction:column;align-items:stretch}
   .btn{
-    background:var(--accent);color:#022;padding:10px 12px;border-radius:8px;
-    border:0;cursor:pointer;font-weight:700
+    background:var(--accent); color:#022; padding:10px 12px; border-radius:10px; border:0; cursor:pointer; font-weight:700;
   }
-  .btn.sec{
-    background:transparent;border:1px solid rgba(255,255,255,0.07);
-    color:var(--muted)
-  }
-  .notice{font-size:13px;color:var(--muted);margin-top:10px}
-  .result{margin-top:16px;display:grid;gap:12px}
-
-  .media{
-    display:flex;justify-content:space-between;align-items:center;
-    padding:12px;border-radius:10px;background:rgba(255,255,255,0.04)
-  }
-  .media .left{max-width:70%}
-
-  a.link{
-    padding:8px 10px;border-radius:7px;background:rgba(6,182,212,0.18);
-    color:#cfefff;text-decoration:none;font-weight:600
-  }
-
-  img.thumb{max-width:160px;border-radius:8px}
-
-  pre.raw{
-    white-space:pre-wrap;background:#02121a;color:#9fe;
-    padding:12px;border-radius:10px;margin-top:12px
-  }
-
-  @media(max-width:600px){
-    .row{flex-direction:column}
-    .media{flex-direction:column;align-items:flex-start}
-    a.link{margin-top:8px;display:block}
+  .btn.ghost{background:transparent; border:1px solid rgba(255,255,255,0.04); color:var(--muted)}
+  .note{color:var(--muted);font-size:13px;margin-top:8px}
+  /* header card */
+  .meta{display:flex;gap:12px;align-items:center;margin-top:14px}
+  .thumb{width:120px;height:68px;border-radius:8px;object-fit:cover;flex:0 0 120px}
+  .meta-info{flex:1}
+  .meta-title{font-weight:700;font-size:16px}
+  .meta-sub{color:var(--muted);font-size:13px;margin-top:6px}
+  .meta-stats{color:var(--muted);font-size:12px;margin-top:8px}
+  /* tabs */
+  .tabs{display:flex;gap:8px;margin-top:12px}
+  .tab{flex:1;padding:10px;border-radius:10px;text-align:center;background:var(--glass);cursor:pointer;font-weight:700}
+  .tab.active{background:linear-gradient(90deg, rgba(6,182,212,0.15), rgba(71,118,230,0.12)); color:#e9ffff}
+  /* lists */
+  .list{margin-top:12px;display:grid;gap:10px}
+  .item{display:flex;gap:10px;align-items:center;padding:10px;border-radius:10px;background:rgba(255,255,255,0.02)}
+  .item .left{flex:1}
+  .item .title{font-weight:700}
+  .item .meta{color:var(--muted);font-size:13px;margin-top:6px}
+  .actions{display:flex;gap:8px;align-items:center}
+  .link-btn{padding:8px 10px;border-radius:8px;background:rgba(6,182,212,0.12);color:#cfefff;text-decoration:none;font-weight:700}
+  .small-btn{padding:6px 8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--muted);font-weight:700}
+  .copy{font-size:12px}
+  /* raw container toggle */
+  .raw-toggle{margin-top:12px;display:flex;gap:8px;align-items:center}
+  pre.raw{white-space:pre-wrap;background:#02121a;color:#9fe;padding:12px;border-radius:10px;margin-top:8px;max-height:320px;overflow:auto}
+  /* responsive */
+  @media(max-width:640px){
+    .meta{flex-direction:column;align-items:flex-start}
+    .thumb{width:100%;height:160px}
+    .tabs{flex-direction:row;overflow:auto}
+    .tab{white-space:nowrap;flex:unset}
   }
 </style>
 </head>
-
 <body>
-<div class="wrap">
-  <div class="card">
-    <h1>YouTube Downloader (RapidAPI)</h1>
-    <p class="lead">Paste API key → YouTube URL → Fetch → Download links appear.</p>
+  <div class="wrap">
+    <div class="card">
+      <h1>YouTube Downloader — Clean UI</h1>
+      <p class="lead">Paste RapidAPI key (saved locally), then paste a YouTube link/ID and Fetch. Choose Video / Audio / Thumbnail to see download options.</p>
 
-    <label>RapidAPI Key</label>
-    <div class="row">
-      <input id="apiKey" type="text" placeholder="Paste your RapidAPI key" />
-      <button id="saveKey" class="btn sec">Save</button>
+      <label>RapidAPI Key</label>
+      <div class="row">
+        <input id="apiKey" type="text" placeholder="Paste RapidAPI key (kept local)" />
+        <button id="saveKey" class="btn ghost">Save</button>
+      </div>
+
+      <label style="margin-top:10px">YouTube URL or ID</label>
+      <div class="row" style="margin-top:8px">
+        <input id="videoInput" type="url" placeholder="https://youtu.be/ or https://www.youtube.com/watch?v=..." />
+        <button id="fetchBtn" class="btn">Fetch</button>
+      </div>
+
+      <div id="status" class="note"></div>
+
+      <!-- Meta area -->
+      <div id="metaArea" style="display:none" class="meta">
+        <img id="metaThumb" class="thumb" src="" alt="thumb"/>
+        <div class="meta-info">
+          <div id="metaTitle" class="meta-title">Title</div>
+          <div id="metaAuthor" class="meta-sub">Author</div>
+          <div id="metaStats" class="meta-stats">Duration · Views</div>
+        </div>
+      </div>
+
+      <!-- tabs -->
+      <div id="tabsArea" style="display:none">
+        <div class="tabs" id="tabs">
+          <div class="tab active" data-tab="video">Video</div>
+          <div class="tab" data-tab="audio">Audio</div>
+          <div class="tab" data-tab="thumbs">Thumbnail</div>
+        </div>
+
+        <div id="contentArea" style="margin-top:12px">
+          <div id="videoList" class="list"></div>
+          <div id="audioList" class="list" style="display:none"></div>
+          <div id="thumbList" class="list" style="display:none"></div>
+        </div>
+      </div>
+
+      <!-- raw toggle -->
+      <div class="raw-toggle">
+        <button id="toggleRaw" class="small-btn">Show raw JSON</button>
+        <div style="flex:1" class="note">(Hidden by default — for debugging)</div>
+      </div>
+
+      <div id="rawBox" style="display:none"><pre id="rawPre" class="raw"></pre></div>
+
+      <div style="margin-top:12px" class="note">⚠ Do not share your API key publicly. Use for learning/personal only.</div>
     </div>
-
-    <label>YouTube URL / Video ID</label>
-    <div class="row">
-      <input id="videoInput" type="url" placeholder="https://youtu.be/ID or full link" />
-      <button id="fetchBtn" class="btn">Fetch</button>
-    </div>
-
-    <div id="status" class="notice"></div>
-    <div id="info" class="result"></div>
-
-    <div class="notice">⚠ API key public-এ শেয়ার করবেন না।</div>
   </div>
-</div>
 
 <script>
+// --- CONFIG ---
 const API_HOST = "youtube-media-downloader.p.rapidapi.com";
 const API_URL  = "https://" + API_HOST + "/v2/video/details";
 
-const apiKeyEl = document.getElementById("apiKey");
-const videoInput = document.getElementById("videoInput");
-const saveKeyBtn = document.getElementById("saveKey");
-const fetchBtn = document.getElementById("fetchBtn");
-const statusEl = document.getElementById("status");
-const infoEl = document.getElementById("info");
+// --- UI elements ---
+const apiKeyEl = document.getElementById('apiKey');
+const saveKeyBtn = document.getElementById('saveKey');
+const videoInput = document.getElementById('videoInput');
+const fetchBtn = document.getElementById('fetchBtn');
+const statusEl = document.getElementById('status');
+
+const metaArea = document.getElementById('metaArea');
+const metaThumb = document.getElementById('metaThumb');
+const metaTitle = document.getElementById('metaTitle');
+const metaAuthor = document.getElementById('metaAuthor');
+const metaStats = document.getElementById('metaStats');
+
+const tabsArea = document.getElementById('tabsArea');
+const tabs = document.getElementById('tabs');
+const videoList = document.getElementById('videoList');
+const audioList = document.getElementById('audioList');
+const thumbList = document.getElementById('thumbList');
+
+const toggleRawBtn = document.getElementById('toggleRaw');
+const rawBox = document.getElementById('rawBox');
+const rawPre = document.getElementById('rawPre');
 
 // load saved key
-if(localStorage.getItem("rapid_key"))
-  apiKeyEl.value = localStorage.getItem("rapid_key");
+if(localStorage.getItem('rapid_key')) apiKeyEl.value = localStorage.getItem('rapid_key');
 
 // save key
-saveKeyBtn.addEventListener("click", ()=>{
-  let k = apiKeyEl.value.trim();
-  if(!k) return alert("Paste your API key first");
-  localStorage.setItem("rapid_key", k);
-  status("API key saved");
+saveKeyBtn.addEventListener('click', ()=>{
+  const k = apiKeyEl.value.trim();
+  if(!k) return alert('Paste your RapidAPI key first');
+  localStorage.setItem('rapid_key', k);
+  status('API key saved locally.');
 });
 
-// fetch events
-fetchBtn.addEventListener("click", ()=> {
+// fetch
+fetchBtn.addEventListener('click', async ()=>{
+  clearAll();
   const url = videoInput.value.trim();
-  if(!url) return alert("Paste URL or ID");
-
-  const key = localStorage.getItem("rapid_key") || apiKeyEl.value.trim();
-  if(!key) return alert("API key missing");
-
+  if(!url) return alert('Paste a YouTube URL or ID');
+  const key = localStorage.getItem('rapid_key') || apiKeyEl.value.trim();
+  if(!key) return alert('API key missing');
   const vid = extractID(url);
-  if(!vid) return alert("Invalid YouTube URL / ID");
-
-  fetchVideo(vid, key);
+  if(!vid) return alert('Invalid YouTube URL / ID');
+  await fetchVideo(vid, key);
 });
 
-function status(msg){ statusEl.textContent = msg; }
-function clear(){ infoEl.innerHTML = ""; status(""); }
+// tab switching
+tabs.addEventListener('click', (e)=>{
+  const t = e.target.closest('.tab');
+  if(!t) return;
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+  const tabName = t.dataset.tab;
+  showTab(tabName);
+});
 
-// Extract video ID
+toggleRawBtn.addEventListener('click', ()=>{
+  if(rawBox.style.display === 'none'){
+    rawBox.style.display = 'block';
+    toggleRawBtn.textContent = 'Hide raw JSON';
+  } else {
+    rawBox.style.display = 'none';
+    toggleRawBtn.textContent = 'Show raw JSON';
+  }
+});
+
+// helpers
+function status(msg){ statusEl.textContent = msg || ''; }
+function clearAll(){
+  status('');
+  metaArea.style.display = 'none';
+  tabsArea.style.display = 'none';
+  videoList.innerHTML = '';
+  audioList.innerHTML = '';
+  thumbList.innerHTML = '';
+  rawPre.textContent = '';
+  rawBox.style.display = 'none';
+  toggleRawBtn.textContent = 'Show raw JSON';
+}
 function extractID(x){
-  if(/^[A-Za-z0-9_-]{8,}$/.test(x) && !x.includes("/")) return x;
+  if(/^[A-Za-z0-9_-]{8,}$/.test(x) && !x.includes('/')) return x;
   try{
     const u = new URL(x);
-    if(u.hostname.includes("youtu.be")) return u.pathname.slice(1);
-    if(u.hostname.includes("youtube.com")){
-      const v = u.searchParams.get("v");
+    if(u.hostname.includes('youtu.be')) return u.pathname.slice(1);
+    if(u.hostname.includes('youtube.com')){
+      const v = u.searchParams.get('v');
       if(v) return v;
-      const p = u.pathname.split("/");
-      const i = p.indexOf("embed");
+      const p = u.pathname.split('/');
+      const i = p.indexOf('embed');
       if(i>=0 && p[i+1]) return p[i+1];
     }
-  }catch(err){}
+  } catch(e){}
   return null;
 }
+function humanSize(bytes){
+  if(!bytes) return '';
+  const n = Number(bytes);
+  if(isNaN(n)) return String(bytes);
+  if(n < 1024) return n + ' B';
+  const units = ['KB','MB','GB','TB'];
+  let i = -1, val = n;
+  do { val = val / 1024; i++; } while(val >= 1024 && i < units.length-1);
+  return val.toFixed(2) + ' ' + units[i];
+}
+function safeAttr(s){ return String(s||'').replace(/"/g,'&quot;'); }
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
-// MAIN FETCH + DEBUG DISPLAY
+// fetch API and render
 async function fetchVideo(videoId, key){
-  clear();
-  status("Fetching...");
-
-  const q = new URLSearchParams({
-    videoId: videoId,
-    urlAccess: "normal",
-    videos: "auto",
-    audios: "auto"
-  });
-
+  clearAll();
+  status('Fetching video info...');
   try{
-    const r = await fetch(API_URL + "?" + q.toString(), {
-      method: "GET",
-      headers: {
-        "x-rapidapi-host": API_HOST,
-        "x-rapidapi-key": key
+    const q = new URLSearchParams({ videoId: videoId, urlAccess: 'normal', videos:'auto', audios:'auto' });
+    const r = await fetch(API_URL + '?' + q.toString(), { method:'GET', headers:{ 'x-rapidapi-host':API_HOST, 'x-rapidapi-key': key }});
+    const txt = await r.text();
+    let data; try{ data = JSON.parse(txt); } catch(e){ data = txt; }
+    console.log('RAW API RESPONSE', data);
+    rawPre.textContent = (typeof data === 'string') ? data : JSON.stringify(data, null, 2);
+    // check success or error
+    if(data && data.errorId && data.errorId !== 'Success' && data.errorId !== 'Success'){
+      status('API error: ' + (data.reason || data.errorId || 'Unknown'));
+      // still show raw box (helpful)
+      rawBox.style.display = 'block';
+      toggleRawBtn.textContent = 'Hide raw JSON';
+      return;
+    }
+
+    // show meta
+    const title = data.title || data.name || 'Untitled';
+    const author = (data.channel && data.channel.name) || data.author || '';
+    const thumbs = data.thumbnails || data.thumbnails || data.thumbnails || data.thumbnails; // keep safe
+    const bestThumb = (data.thumbnails && data.thumbnails.length) ? data.thumbnails[data.thumbnails.length-1].url : (data.thumbnail || '');
+    metaThumb.src = bestThumb || '';
+    metaTitle.textContent = title;
+    metaAuthor.textContent = author;
+    const dur = data.lengthSeconds || data.duration || data.durationSeconds || data.length || '-';
+    const views = data.viewCount ? (Number(data.viewCount).toLocaleString() + ' views') : (data.viewCountText || '');
+    metaStats.textContent = (dur ? ('Duration: '+dur+' sec') : '') + (views ? (' • '+views) : '');
+    metaArea.style.display = 'flex';
+
+    // prepare lists
+    const videoItems = []; // video (with audio or without)
+    const audioItems = [];
+    const thumbsArr = [];
+
+    // videos.items (newer API)
+    if(data.videos && Array.isArray(data.videos.items)){
+      data.videos.items.forEach(it=>{
+        // keep each item
+        videoItems.push(it);
+        // if it's audio-only, push to audio
+        const mime = (it.mimeType||'') + (it.extension||'');
+        if(!it.hasAudio && /audio/i.test(mime)) audioItems.push(it);
+        if(it.hasAudio && /audio/i.test(mime)) audioItems.push(it);
+      });
+    }
+
+    // fallback arrays
+    ['medias','formats','streams','results','downloads','videoStreams','audioStreams','items'].forEach(key=>{
+      if(Array.isArray(data[key])){
+        data[key].forEach(it=>{
+          // classify
+          const mime = (it.mimeType||'') + (it.extension||'') + (it.type||'');
+          const hasAudio = (typeof it.hasAudio !== 'undefined') ? it.hasAudio : (/(audio|mp3|m4a)/i.test(mime) ? true : false);
+          // If looks like audio-only (mime audio or extension), push to audioItems
+          if(/audio/i.test(mime) || (/m4a|mp3|aac|audio/i.test(mime) && !/video/i.test(mime))){
+            audioItems.push(it);
+          } else {
+            // video-like -> push to videoItems (some items might be audio-containing video)
+            videoItems.push(it);
+            if(hasAudio) audioItems.push(it); // combined streams useful as audio option too
+          }
+        });
       }
     });
 
-    const raw = await r.text();
-    let data;
-    try{ data = JSON.parse(raw); }
-    catch{ data = raw; }
+    // thumbnails
+    if(Array.isArray(data.thumbnails) && data.thumbnails.length){
+      data.thumbnails.forEach(t => { if(t && t.url) thumbsArr.push(t); });
+    } else if(data.thumbnail) thumbsArr.push({url: data.thumbnail});
 
-    console.log("RAW API RESPONSE:", data);
+    // dedupe by url
+    function dedupeByUrl(arr){
+      const map = new Map();
+      arr.forEach(it=>{
+        const u = it.url || it.downloadUrl || it.streamUrl || it.mediaUrl || it.source || it.link;
+        if(!u) return;
+        if(!map.has(u)) map.set(u, it);
+      });
+      return Array.from(map.values());
+    }
+    const vids = dedupeByUrl(videoItems);
+    const auds = dedupeByUrl(audioItems);
+    const ths  = thumbsArr; // usually small
 
-    // show raw JSON on page
-    const pre = document.createElement("pre");
-    pre.className = "raw";
-    pre.textContent = typeof data === "string"
-        ? data
-        : JSON.stringify(data, null, 2);
-    infoEl.appendChild(pre);
+    // render tabs
+    tabsArea.style.display = 'block';
+    // default show video tab
+    showTab('video');
 
-    // Friendly renderer
-    const box = document.createElement("div");
-    box.style.marginTop = "10px";
-    infoEl.appendChild(box);
+    // populate lists
+    renderVideoList(vids);
+    renderAudioList(auds);
+    renderThumbList(ths);
 
-    renderFinal(data, box);
-    status("Done.");
-
-  }catch(e){
-    status("Error: " + e.message);
-    infoEl.innerHTML = "<div style='color:#f88'>Fetch failed: "+e.message+"</div>";
+    status('Formats loaded. Choose tab below.');
+  } catch(err){
+    console.error(err);
+    status('Fetch error: ' + err.message);
+    rawBox.style.display = 'block';
+    toggleRawBtn.textContent = 'Hide raw JSON';
   }
 }
 
-// FRIENDLY RENDERER (FINAL)
-function renderFinal(data, container){
-  if(!data || typeof data !== 'object'){
-    container.innerHTML = '<div style="color:#faa">Invalid response</div>';
+// show tab
+function showTab(name){
+  videoList.style.display = (name === 'video') ? 'block' : 'none';
+  audioList.style.display = (name === 'audio') ? 'block' : 'none';
+  thumbList.style.display = (name === 'thumbs') ? 'block' : 'none';
+}
+
+// render video list
+function renderVideoList(list){
+  videoList.innerHTML = '';
+  if(!list.length){
+    videoList.innerHTML = '<div style="color:#faa">No video formats found.</div>';
     return;
   }
+  list.forEach((it, idx)=>{
+    const url = it.url || it.downloadUrl || it.streamUrl || it.mediaUrl || it.source || it.link;
+    const quality = it.quality || it.quality_label || it.format || (it.width && it.height ? (it.width+'x'+it.height) : 'unknown');
+    const ext = it.extension || (it.mimeType ? (it.mimeType.split(';')[0].split('/').pop()) : '');
+    const size = it.sizeText || it.size || it.filesize || it.data_size || '';
+    const hasAudio = (typeof it.hasAudio !== 'undefined') ? it.hasAudio : (/(audio|m4a|mp3)/i.test(ext) ? true : false);
 
-  // Header
-  const title = data.title || "Unknown title";
-  const thumb = (data.thumbnails && data.thumbnails[0] && data.thumbnails[0].url) || data.thumbnail || "";
-  const author = (data.channel && data.channel.name) || data.author || "";
-  const dur = data.lengthSeconds || data.duration || "-";
-
-  const head = document.createElement("div");
-  head.style.display = 'flex';
-  head.style.gap = '12px';
-
-  if(thumb){
-    const img = document.createElement("img");
-    img.src = thumb;
-    img.className = "thumb";
-    head.appendChild(img);
-  }
-
-  const meta = document.createElement("div");
-  meta.innerHTML = `
-     <div style="font-weight:700">${escapeHtml(title)}</div>
-     <div style="color:#9fb6c8;font-size:13px">${escapeHtml(author)}</div>
-     <div style="color:#9fb6c8;font-size:12px;margin-top:6px">Duration: ${dur} sec</div>`;
-  head.appendChild(meta);
-  container.appendChild(head);
-
-  // expiration (if any)
-  if(data.videos && data.videos.expiration){
-    const t = new Date(data.videos.expiration * 1000);
-    const ex = document.createElement("div");
-    ex.style.color = "#9fb6c8";
-    ex.style.marginTop = "8px";
-    ex.textContent = "Links expire: " + t;
-    container.appendChild(ex);
-  }
-
-  // Collect media lists
-  const lists = [];
-  if(data.videos && Array.isArray(data.videos.items))
-    lists.push({ key:"videos.items", list:data.videos.items });
-
-  ["medias","formats","streams","downloads","results","videoStreams","audioStreams"]
-    .forEach(k => {
-      if(Array.isArray(data[k]) && data[k].length)
-        lists.push({key:k, list:data[k]});
-    });
-
-  // Render lists
-  if(lists.length === 0){
-    container.innerHTML += `<div style="color:#faa;margin-top:10px">
-       No downloadable media found.
-    </div>`;
-    return;
-  }
-
-  lists.forEach(block=>{
-    const h = document.createElement("div");
-    h.style.marginTop = "12px";
-    h.style.fontWeight = "700";
-    h.textContent = `${block.key} (${block.list.length})`;
-    container.appendChild(h);
-
-    block.list.forEach((it, idx)=>{
-      const url = it.url || it.downloadUrl || it.streamUrl || it.mediaUrl || it.source;
-
-      const q = it.quality || it.quality_label || it.format ||
-                (it.width && it.height ? `${it.width}x${it.height}` : "Unknown");
-
-      const mime = it.mimeType || it.extension || "";
-      const size = it.sizeText || it.size || "";
-
-      const row = document.createElement("div");
-      row.className = "media";
-      row.innerHTML = `
-        <div class="left">
-          <div style="font-weight:700">${escapeHtml(q)} ${mime?'• '+escapeHtml(mime):''}</div>
-          <div style="color:#9fb6c8;font-size:13px">${escapeHtml(String(size))}</div>
-        </div>
-        ${
-          url
-          ? `<a class="link" target="_blank" href="${escapeAttr(url)}">Open</a>`
-          : `<span style="color:#777">No URL</span>`
-        }
-      `;
-      container.appendChild(row);
+    const div = document.createElement('div'); div.className = 'item';
+    div.innerHTML = `
+      <div class="left">
+        <div class="title">${escapeHtml(String(quality || 'format'))} ${ext?('<span style="opacity:.8">• '+escapeHtml(ext)+'</span>') : ''}</div>
+        <div class="meta">${hasAudio ? 'Includes audio' : 'Video-only'} ${size ? ' • '+humanSize(size) : ''}</div>
+      </div>
+      <div class="actions">
+        ${url ? `<a class="link-btn" href="${safeAttr(url)}" target="_blank" rel="noreferrer">Open</a>
+                 <a class="link-btn" href="${safeAttr(url)}" download target="_blank" rel="noreferrer">Download</a>
+                 <a class="small-btn copy" href="#" data-url="${safeAttr(url)}">Copy</a>` 
+              : `<span style="color:#777">No URL</span>`}
+      </div>`;
+    videoList.appendChild(div);
+  });
+  // attach copy handlers
+  videoList.querySelectorAll('.copy').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      e.preventDefault();
+      const u = btn.getAttribute('data-url');
+      navigator.clipboard && navigator.clipboard.writeText(u);
+      alert('Link copied');
     });
   });
 }
 
-function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c])); }
-function escapeAttr(s){ return String(s||'').replace(/"/g,'&quot;').replace(/`/g,'\\`'); }
-</script>
+// render audio list
+function renderAudioList(list){
+  audioList.innerHTML = '';
+  if(!list.length){
+    audioList.innerHTML = '<div style="color:#faa">No audio formats found (API may not provide audio-only streams).</div>';
+    return;
+  }
+  list.forEach((it,idx)=>{
+    const url = it.url || it.downloadUrl || it.streamUrl || it.mediaUrl || it.source || it.link;
+    const q = it.quality || it.format || it.bitrate || '';
+    const ext = it.extension || (it.mimeType ? it.mimeType.split(';')[0].split('/').pop() : '');
+    const size = it.sizeText || it.size || it.filesize || it.data_size || '';
 
+    const div = document.createElement('div'); div.className = 'item';
+    div.innerHTML = `
+      <div class="left">
+        <div class="title">${escapeHtml(String(q || 'audio'))} ${ext?('<span style="opacity:.8">• '+escapeHtml(ext)+'</span>') : ''}</div>
+        <div class="meta">${size ? humanSize(size) : ''}</div>
+      </div>
+      <div class="actions">
+        ${url ? `<a class="link-btn" href="${safeAttr(url)}" target="_blank" rel="noreferrer">Open</a>
+                 <a class="link-btn" href="${safeAttr(url)}" download target="_blank" rel="noreferrer">Download</a>
+                 <a class="small-btn copy" href="#" data-url="${safeAttr(url)}">Copy</a>`
+              : `<span style="color:#777">No URL</span>`}
+      </div>`;
+    audioList.appendChild(div);
+  });
+  audioList.querySelectorAll('.copy').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      e.preventDefault();
+      navigator.clipboard && navigator.clipboard.writeText(btn.getAttribute('data-url'));
+      alert('Link copied');
+    });
+  });
+}
+
+// thumbnails
+function renderThumbList(list){
+  thumbList.innerHTML = '';
+  if(!list.length){ thumbList.innerHTML = '<div style="color:#faa">No thumbnails found.</div>'; return;}
+  list.forEach(t=>{
+    const url = t.url || t;
+    const div = document.createElement('div'); div.className = 'item';
+    div.innerHTML = `
+      <div class="left">
+        <img src="${safeAttr(url)}" style="width:100%;max-width:160px;border-radius:8px;display:block;margin-bottom:6px"/>
+        <div class="meta">${escapeHtml(String(t.width || '') + (t.height ? ' x '+t.height : ''))}</div>
+      </div>
+      <div class="actions">
+        <a class="link-btn" href="${safeAttr(url)}" target="_blank" rel="noreferrer">Open</a>
+        <a class="link-btn" href="${safeAttr(url)}" download target="_blank" rel="noreferrer">Download</a>
+        <a class="small-btn copy" href="#" data-url="${safeAttr(url)}">Copy</a>
+      </div>`;
+    thumbList.appendChild(div);
+  });
+  thumbList.querySelectorAll('.copy').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      e.preventDefault();
+      navigator.clipboard && navigator.clipboard.writeText(btn.getAttribute('data-url'));
+      alert('Link copied');
+    });
+  });
+}
+</script>
 </body>
 </html>
