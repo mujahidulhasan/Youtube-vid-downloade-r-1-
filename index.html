@@ -43,6 +43,7 @@
             --sidebar-hover: #34495e;
         }
 
+        /* **UI/UX: মোবাইল ফিট** */
         body {
             background-color: var(--body-bg);
             color: var(--text-dark);
@@ -105,6 +106,7 @@
             padding: 15px 0;
         }
         
+        /* **UI/UX: ডিউরেশন/ভিউজ বিন্যাস** */
         .video-info {
             margin-bottom: 10px; 
         }
@@ -134,6 +136,7 @@
             gap: 5px;
         }
 
+        /* **UI/UX: ফরম্যাট বাটন গ্যাপ ফিক্স** */
         .format-selection {
             display: flex;
             justify-content: space-around;
@@ -145,31 +148,12 @@
             scrollbar-width: none;
         }
         
-        .format-selection::-webkit-scrollbar {
-            display: none;
-        }
-
-        .format-btn.active {
-            background-color: var(--primary-blue);
-            color: #ffffff;
-            border-color: var(--primary-blue);
-        }
-
         .download-options-container {
             margin-top: 15px;
             border-top: 1px solid var(--card-border-grey);
             padding-top: 15px;
             display: none;
             width: 100%;
-        }
-        
-        .download-options-container h3 {
-            font-size: 16px;
-            color: var(--primary-blue);
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
 
         .download-item {
@@ -180,6 +164,7 @@
             border-bottom: 1px solid var(--card-border-grey);
         }
 
+        /* **UI/UX: ডাউনলোড বাটন আন্ডারলাইন ফিক্স** */
         .download-btn-small {
             background-color: var(--primary-blue);
             color: #ffffff;
@@ -302,7 +287,7 @@
     <script>
         /**
          * findAudioStreams(data) - Finds and normalizes audio stream candidates.
-         * This function is crucial for solving the MP3 stream and audio-in-MP4 issues.
+         * (Your provided robust helper function)
          */
         function findAudioStreams(data){
           if(!data || typeof data !== 'object') return [];
@@ -366,7 +351,6 @@
           const seen = new Set();
           audioCandidates.forEach(a => { if(a.url && !seen.has(a.url)){ seen.add(a.url); uniq.push(a); } });
 
-          // Return unique audio streams. If none found, fall back to combined streams.
           if(uniq.length) return uniq;
           
           const uniq2 = [];
@@ -376,7 +360,7 @@
              if(a.url && !seen2.has(a.url) && (a.extension === 'mp4' || a.extension === 'webm') && a.height > 0){ seen2.add(a.url); uniq2.push(a); } 
           });
           
-          return uniq2; // may be empty array
+          return uniq2;
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -428,7 +412,7 @@
                 body.classList.toggle('dark-mode', darkModeToggle.checked);
             });
             
-            // ... (API Key handling functions omitted for brevity, they remain unchanged) ...
+            // ... (API Key handling functions omitted for brevity) ...
 
             function maskKey(k){
                 if(!k) return '';
@@ -528,6 +512,7 @@
 
                     const title = data.title || data.name || 'Untitled';
                     const durationSecs = data.lengthSeconds || data.duration || data.durationSeconds || null;
+                    
                     const viewCount = data.viewCount || data.viewCountText || null;
                     const viewsText = viewCount ? new Intl.NumberFormat('en-US').format(viewCount) : '';
                     
@@ -576,6 +561,7 @@
             }
             
             function isAudioOnly(it){
+                // We use the simpler version here as findAudioStreams already did the heavy lifting
                 return (it.mimeType||'').toLowerCase().includes('audio/') || (it.extension||'').toLowerCase().includes('m4a') || (it.extension||'').toLowerCase().includes('mp3') || it.itag==140;
             }
             
@@ -599,12 +585,13 @@
                 if(!data) return;
 
                 // **STEP 1: Find ALL normalized streams using the new robust helper**
-                const allStreams = findAudioStreams(data);
+                const allStreams = findAudioStreams(data); // Using the robust helper for normalization
                 
                 // **STEP 2: Filter the streams based on file type and audio presence**
                 
                 // Separate Audio-only streams
-                const audios = allStreams.filter(it => isAudioOnly(it) && it.extension !== 'mp4' && it.extension !== 'webm'); // MP4/WebM containers can be audio-only, but we separate them for video/audio tabs
+                // Filter only true audio extensions (m4a, mp3, etc)
+                const audios = allStreams.filter(it => it.extension === 'mp3' || it.extension === 'm4a' || it.mimeType.includes('audio/')); 
 
                 // Filter MP4 streams (focus on guaranteed combined/muxed streams)
                 const mp4s = allStreams.filter(it => {
@@ -613,7 +600,7 @@
                     
                     if (!isMp4) return false;
                     
-                    // Check if it's explicitly audio-only (shouldn't be in video lists, though this is primarily for combined check)
+                    // Exclude streams that are explicitly marked as audio-only by the robust helper
                     if (isAudioOnly(it)) return false; 
                     
                     // Filter: Only include streams that are likely to be muxed (video + audio)
@@ -635,10 +622,8 @@
                     if (!isWebM) return false;
                     if (isAudioOnly(it)) return false;
                     
-                    // Heuristic 1: Low resolution videos are often muxed
                     if (res > 0 && res <= 480) return true;
                     
-                    // Heuristic 2: Check for explicit API hints
                     const hasAudioProperty = (it.bitrate || it.hasAudio === true);
                     if (res > 480 && hasAudioProperty) return true;
 
@@ -651,7 +636,7 @@
                 const webmsS = sortAsc(webms);
                 const audiosS = audios.filter(item => item.url); 
 
-                // --- Rendering logic (unchanged) ---
+                // --- Rendering logic ---
                 let headerHtml = '';
                 if(format === 'mp4') headerHtml = '<h3><i class="fas fa-video"></i> MP4 Download Options (Audio Included)</h3>';
                 else if(format === 'webm') headerHtml = '<h3><i class="fas fa-video"></i> WebM Download Options</h3>';
@@ -660,7 +645,6 @@
                 
                 let html = '';
 
-                // If selected format is mp4 -> list mp4s
                 if(format === 'mp4'){
                     html += headerHtml;
                     if(mp4sS.length){
@@ -680,7 +664,6 @@
                     if(audiosS.length){
                         audiosS.forEach(it=> html += makeRow(it));
                     } else {
-                        // যদি অডিও-অনলি স্ট্রীম না থাকে, তাহলে Combine Stream দেখানোর বিকল্প:
                         if(mp4sS.length > 0 || webmsS.length > 0){
                             html += '<div class="small" style="color:var(--text-medium);padding:10px 0;">No audio-only streams found. You may download a combined Video/Audio stream below.</div>';
                             sortAsc([...mp4sS, ...webmsS]).forEach(it=> html += makeRow(it));
