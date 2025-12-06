@@ -1,898 +1,249 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="hi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Video Downloader - সরাসরি ডাউনলোড</title>
+    <title>ऑल-इन-वन वीडियो डाउनलोडर</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', 'Kalpurush', sans-serif;
+        /* मोबाइल-फ्रेंडली CSS3 स्टाइल */
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --text-color: #333;
+            --bg-color: #f4f7f6;
+            --card-bg: #fff;
         }
-        
+
         body {
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
-            color: white;
-            min-height: 100vh;
+            font-family: 'Arial', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
             padding: 20px;
-        }
-        
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-        
-        header {
-            text-align: center;
-            padding: 40px 20px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 20px;
-            margin-bottom: 30px;
-            border: 2px solid rgba(255, 0, 0, 0.3);
-        }
-        
-        h1 {
-            font-size: 2.8rem;
-            color: #ff0000;
-            margin-bottom: 15px;
-            text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
-        }
-        
-        .logo {
-            font-size: 4rem;
-            color: #ff0000;
-            margin-bottom: 20px;
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-        
-        .subtitle {
-            font-size: 1.2rem;
-            color: #ffffffcc;
-            max-width: 600px;
-            margin: 0 auto;
+            color: var(--text-color);
             line-height: 1.6;
         }
-        
-        .main-box {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(15px);
-            border-radius: 20px;
-            padding: 40px;
-            margin-bottom: 30px;
-            border: 2px solid rgba(255, 0, 0, 0.2);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-        }
-        
-        .input-section {
-            margin-bottom: 30px;
-        }
-        
-        .input-box {
-            position: relative;
-            margin-bottom: 25px;
-        }
-        
-        .url-input {
-            width: 100%;
-            padding: 20px 20px 20px 60px;
-            background: rgba(0, 0, 0, 0.3);
-            border: 2px solid rgba(255, 0, 0, 0.4);
-            border-radius: 15px;
-            color: white;
-            font-size: 1.1rem;
-            transition: all 0.3s;
-        }
-        
-        .url-input:focus {
-            outline: none;
-            border-color: #ff0000;
-            box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
-        }
-        
-        .url-input::placeholder {
-            color: rgba(255, 255, 255, 0.5);
-        }
-        
-        .input-icon {
-            position: absolute;
-            left: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #ff0000;
-            font-size: 1.5rem;
-        }
-        
-        .btn {
-            padding: 18px 40px;
-            border: none;
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 20px;
             border-radius: 12px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
-        
-        .btn-red {
-            background: linear-gradient(135deg, #ff0000, #cc0000);
-            color: white;
-            width: 100%;
-            justify-content: center;
-        }
-        
-        .btn-red:hover:not(:disabled) {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(255, 0, 0, 0.4);
-        }
-        
-        .btn-gray {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-        
-        .btn-gray:hover {
-            background: rgba(255, 255, 255, 0.15);
-        }
-        
-        .btn-small {
-            padding: 12px 25px;
-            font-size: 1rem;
-        }
-        
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none !important;
-        }
-        
-        .loading {
+
+        h1 {
             text-align: center;
-            padding: 50px;
-            display: none;
-        }
-        
-        .spinner {
-            width: 70px;
-            height: 70px;
-            border: 5px solid rgba(255, 0, 0, 0.1);
-            border-top: 5px solid #ff0000;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 25px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .result-section {
-            display: none;
-            animation: fadeIn 0.5s;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .video-info {
-            background: rgba(0, 0, 0, 0.4);
-            padding: 30px;
-            border-radius: 15px;
+            color: var(--primary-color);
             margin-bottom: 30px;
-            border: 1px solid rgba(255, 0, 0, 0.3);
+            font-size: 1.8em;
         }
-        
-        .video-thumbnail {
-            width: 100%;
-            max-height: 300px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            border: 2px solid rgba(255, 0, 0, 0.3);
-            display: none;
-        }
-        
-        .video-title {
-            font-size: 1.5rem;
-            margin-bottom: 15px;
-            color: #ff9999;
-            line-height: 1.4;
-        }
-        
-        .video-details {
+
+        /* इनपुट और बटन का स्टाइल */
+        .input-group {
             display: flex;
-            flex-wrap: wrap;
-            gap: 25px;
-            color: rgba(255, 255, 255, 0.9);
-            margin-top: 20px;
-        }
-        
-        .detail-item {
-            display: flex;
-            align-items: center;
             gap: 10px;
+            margin-bottom: 20px;
+            flex-direction: column; /* मोबाइल पर स्टैक इनपुट और बटन */
         }
-        
-        .detail-item i {
-            color: #ff0000;
-            font-size: 1.2rem;
+
+        #videoUrl {
+            flex-grow: 1;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+            width: 100%; /* फुल विड्थ */
+            box-sizing: border-box;
         }
-        
-        .download-options {
-            margin-top: 40px;
+
+        #videoUrl:focus {
+            border-color: var(--primary-color);
+            outline: none;
         }
-        
-        .quality-selector {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            margin: 20px 0;
-        }
-        
-        .quality-btn {
-            padding: 12px 25px;
-            background: rgba(255, 0, 0, 0.15);
-            border: 2px solid rgba(255, 0, 0, 0.3);
-            border-radius: 10px;
+
+        #downloadBtn {
+            padding: 12px 20px;
+            background-color: var(--primary-color);
             color: white;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .quality-btn:hover {
-            background: rgba(255, 0, 0, 0.3);
-            border-color: #ff0000;
-        }
-        
-        .quality-btn.active {
-            background: #ff0000;
-            border-color: #ff0000;
-        }
-        
-        .format-selector {
-            margin: 25px 0;
-        }
-        
-        .format-btns {
-            display: flex;
-            gap: 15px;
-            margin-top: 15px;
-        }
-        
-        .format-btn {
-            padding: 15px 30px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-            color: white;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s;
-        }
-        
-        .format-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-        
-        .format-btn.active {
-            background: rgba(255, 0, 0, 0.3);
-            border-color: #ff0000;
-        }
-        
-        .download-btn-container {
-            text-align: center;
-            margin-top: 40px;
-        }
-        
-        .download-btn-large {
-            padding: 20px 50px;
-            font-size: 1.3rem;
-            background: linear-gradient(135deg, #ff0000, #990000);
-        }
-        
-        .error-box {
-            background: rgba(255, 0, 0, 0.1);
-            border: 2px solid rgba(255, 0, 0, 0.3);
-            border-radius: 15px;
-            padding: 25px;
-            margin: 20px 0;
-            display: none;
-        }
-        
-        .error-box h3 {
-            color: #ff6666;
-            margin-bottom: 15px;
-        }
-        
-        .examples {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 25px;
-            border-radius: 15px;
-            margin-top: 30px;
-        }
-        
-        .examples h3 {
-            color: #ff9999;
-            margin-bottom: 15px;
-        }
-        
-        .example-links {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-top: 15px;
-        }
-        
-        .example-link {
-            background: rgba(255, 0, 0, 0.1);
-            padding: 10px 20px;
+            border: none;
             border-radius: 8px;
             cursor: pointer;
-            transition: all 0.3s;
+            font-size: 1em;
+            transition: background-color 0.3s, opacity 0.3s;
+            flex-shrink: 0;
+            font-weight: bold;
         }
-        
-        .example-link:hover {
-            background: rgba(255, 0, 0, 0.2);
-            transform: translateY(-2px);
+
+        #downloadBtn:hover:not(:disabled) {
+            background-color: #2980b9;
         }
-        
-        footer {
-            text-align: center;
-            padding: 40px 0 20px;
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 0.9rem;
-            margin-top: 40px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+        #downloadBtn:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
         }
-        
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: rgba(255, 0, 0, 0.9);
-            color: white;
-            padding: 20px 30px;
-            border-radius: 12px;
-            z-index: 1000;
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            transform: translateX(150%);
-            transition: transform 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 15px;
+
+        /* डेस्कटॉप के लिए मीडिया क्वेरी */
+        @media (min-width: 600px) {
+            .input-group {
+                flex-direction: row; /* डेस्कटॉप पर एक ही लाइन में */
+            }
+
+            #videoUrl {
+                width: auto;
+            }
         }
-        
-        .notification.show {
-            transform: translateX(0);
+
+        /* रिजल्ट्स सेक्शन का स्टाइल */
+        #results {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
         }
-        
-        @media (max-width: 768px) {
-            .container {
-                padding: 10px;
-            }
-            
-            h1 {
-                font-size: 2rem;
-            }
-            
-            .logo {
-                font-size: 3rem;
-            }
-            
-            .main-box {
-                padding: 25px;
-            }
-            
-            .url-input {
-                padding: 18px 18px 18px 50px;
-                font-size: 1rem;
-            }
-            
-            .btn {
-                padding: 16px 30px;
-                font-size: 1.1rem;
-            }
-            
-            .video-details {
-                flex-direction: column;
-                gap: 15px;
-            }
+
+        #results h2 {
+            color: var(--secondary-color);
+            font-size: 1.4em;
+            margin-bottom: 15px;
+        }
+
+        .media-link {
+            display: block;
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #ecf0f1;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-color);
+            transition: background-color 0.2s;
+        }
+
+        .media-link:hover {
+            background-color: #e0e6e8;
+        }
+
+        .media-link strong {
+            color: var(--primary-color);
+            margin-right: 8px;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            padding: 10px;
+            background-color: #fdd;
+            border: 1px solid #f99;
+            border-radius: 8px;
         }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
+
     <div class="container">
-        <header>
-            <div class="logo">
-                <i class="fab fa-youtube"></i>
-            </div>
-            <h1>YouTube Video Downloader</h1>
-            <p class="subtitle">শুধুমাত্র ইউটিউব ভিডিও লিংক পেস্ট করুন, সরাসরি ডাউনলোড লিংক পান</p>
-        </header>
-        
-        <div class="main-box">
-            <div class="input-section">
-                <h2 style="margin-bottom: 25px; color: #ff9999;">
-                    <i class="fas fa-link"></i> ইউটিউব ভিডিও লিংক দিন
-                </h2>
-                
-                <div class="input-box">
-                    <i class="fas fa-play-circle input-icon"></i>
-                    <input type="url" 
-                           id="youtubeUrl" 
-                           class="url-input" 
-                           placeholder="https://www.youtube.com/watch?v=... অথবা https://youtu.be/..."
-                           autocomplete="off">
-                </div>
-                
-                <button id="getLinksBtn" class="btn btn-red">
-                    <i class="fas fa-bolt"></i> ডাউনলোড লিংক পেতে ক্লিক করুন
-                </button>
-                
-                <div class="examples">
-                    <h3><i class="fas fa-lightbulb"></i> উদাহরণ লিংক:</h3>
-                    <div class="example-links">
-                        <div class="example-link" data-url="https://www.youtube.com/watch?v=dQw4w9WgXcQ">
-                            YouTube Short Video
-                        </div>
-                        <div class="example-link" data-url="https://youtu.be/9bZkp7q19f0">
-                            YouTube Music Video
-                        </div>
-                        <div class="example-link" data-url="https://www.youtube.com/watch?v=jNQXAC9IVRw">
-                            First YouTube Video
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="loading" id="loading">
-                <div class="spinner"></div>
-                <p style="margin: 20px 0; font-size: 1.2rem;">ভিডিও তথ্য খুঁজে বের করা হচ্ছে...</p>
-                <p style="color: rgba(255, 255, 255, 0.7);">দয়া করে অপেক্ষা করুন</p>
-            </div>
-            
-            <div class="error-box" id="errorBox">
-                <h3><i class="fas fa-exclamation-triangle"></i> সমস্যা!</h3>
-                <p id="errorMessage">ইউটিউব ভিডিও লিংক সঠিক নয়। দয়া করে চেক করুন এবং আবার চেষ্টা করুন।</p>
-                <div id="errorTips" style="margin-top: 15px;"></div>
-            </div>
-            
-            <div class="result-section" id="resultSection">
-                <div class="video-info">
-                    <img id="videoThumbnail" class="video-thumbnail" alt="Video Thumbnail">
-                    <h3 id="videoTitle" class="video-title">ভিডিও টাইটেল</h3>
-                    
-                    <div class="video-details">
-                        <div class="detail-item">
-                            <i class="fas fa-user"></i>
-                            <span id="videoChannel">চ্যানেল</span>
-                        </div>
-                        <div class="detail-item">
-                            <i class="fas fa-eye"></i>
-                            <span id="videoViews">দর্শন সংখ্যা</span>
-                        </div>
-                        <div class="detail-item">
-                            <i class="fas fa-clock"></i>
-                            <span id="videoDuration">সময়</span>
-                        </div>
-                        <div class="detail-item">
-                            <i class="fas fa-calendar"></i>
-                            <span id="videoDate">তারিখ</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="download-options">
-                    <h3 style="margin-bottom: 20px; color: #ff9999;">
-                        <i class="fas fa-download"></i> ডাউনলোড অপশন
-                    </h3>
-                    
-                    <div class="quality-selector">
-                        <h4 style="margin-bottom: 15px;">কোয়ালিটি সিলেক্ট করুন:</h4>
-                        <div id="qualityButtons">
-                            <!-- Quality buttons will be added here -->
-                        </div>
-                    </div>
-                    
-                    <div class="format-selector">
-                        <h4 style="margin-bottom: 15px;">ফরম্যাট সিলেক্ট করুন:</h4>
-                        <div class="format-btns" id="formatButtons">
-                            <div class="format-btn active" data-format="mp4">MP4 (Video)</div>
-                            <div class="format-btn" data-format="mp3">MP3 (Audio)</div>
-                        </div>
-                    </div>
-                    
-                    <div class="download-btn-container">
-                        <a id="downloadLink" class="btn btn-red btn-large" target="_blank">
-                            <i class="fas fa-download"></i> এখনই ডাউনলোড করুন
-                        </a>
-                        <p style="margin-top: 15px; color: rgba(255, 255, 255, 0.7); font-size: 0.9rem;">
-                            ডাউনলোড শুরু না হলে লিংকে রাইট-ক্লিক করে "Save link as..." সিলেক্ট করুন
-                        </p>
-                    </div>
-                </div>
-            </div>
+        <h1>📹 ऑल-इन-वन डाउनलोडर</h1>
+
+        <div class="input-group">
+            <input type="url" id="videoUrl" placeholder="वीडियो URL पेस्ट करें (जैसे: TikTok, Instagram)" required>
+            <button id="downloadBtn">डाउनलोड प्राप्त करें</button>
         </div>
-        
-        <footer>
-            <p>YouTube Video Downloader &copy; 2023 - শুধুমাত্র ইউটিউব ভিডিও ডাউনলোড</p>
-            <p style="margin-top: 10px; font-size: 0.8rem;">
-                এই টুল শুধুমাত্র শিক্ষামূলক উদ্দেশ্যে তৈরি করা হয়েছে
-            </p>
-        </footer>
-    </div>
-    
-    <div id="notification" class="notification">
-        <i class="fas fa-check-circle"></i>
-        <span id="notificationText">ভিডিও প্রস্তুত!</span>
+
+        <p id="statusMessage" style="text-align: center; color: var(--primary-color); font-weight: bold;"></p>
+
+        <div id="results">
+            </div>
     </div>
 
     <script>
-        // YouTube Video Downloader - Standalone
-        class YouTubeDownloader {
-            constructor() {
-                this.currentVideoId = null;
-                this.currentFormat = 'mp4';
-                this.currentQuality = '720p';
-                this.videoInfo = null;
+        // API क्रेडेंशियल्स (इन्हें सर्वर-साइड में रखना सुरक्षित होता है)
+        const RAPID_API_KEY = "29f8c3b79amshc7b9755d426320dp1b94fajsn62b1821d47db";
+        const RAPID_API_HOST = "social-download-all-in-one.p.rapidapi.com";
+        const API_ENDPOINT = "https://social-download-all-in-one.p.rapidapi.com/v1/social/autolink";
+
+        // DOM एलिमेंट्स
+        const videoUrlInput = document.getElementById('videoUrl');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const resultsDiv = document.getElementById('results');
+        const statusMessage = document.getElementById('statusMessage');
+
+        // बटन क्लिक हैंडलर
+        downloadBtn.addEventListener('click', handleDownload);
+
+        async function handleDownload() {
+            const url = videoUrlInput.value.trim();
+            resultsDiv.innerHTML = ''; // पुराने रिजल्ट्स को हटाओ
+            statusMessage.textContent = ''; // स्टेटस मैसेज क्लियर करो
+
+            if (!url) {
+                statusMessage.textContent = 'कृपया एक वीडियो URL दर्ज करें।';
+                return;
             }
-            
-            // Extract YouTube Video ID
-            extractVideoId(url) {
-                const patterns = [
-                    /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s?]+)/,
-                    /youtube\.com\/embed\/([^?\s]+)/,
-                    /youtube\.com\/v\/([^?\s]+)/
-                ];
-                
-                for (const pattern of patterns) {
-                    const match = url.match(pattern);
-                    if (match && match[1]) {
-                        return match[1];
-                    }
-                }
-                return null;
-            }
-            
-            // Get video info using YouTube iframe API
-            async getVideoInfo(videoId) {
-                return new Promise((resolve, reject) => {
-                    // Create iframe to get video info
-                    const iframe = document.createElement('iframe');
-                    iframe.style.display = 'none';
-                    iframe.src = `https://www.youtube.com/embed/${videoId}?enablejsapi=1`;
-                    
-                    iframe.onload = () => {
-                        // Simulate getting video info
-                        setTimeout(() => {
-                            const info = {
-                                title: `YouTube Video - ${videoId}`,
-                                channel: 'YouTube Channel',
-                                views: '1M+ views',
-                                duration: '4:20',
-                                date: '2023',
-                                thumbnail: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
-                            };
-                            resolve(info);
-                        }, 1000);
-                    };
-                    
-                    iframe.onerror = reject;
-                    document.body.appendChild(iframe);
-                    
-                    // Remove iframe after use
-                    setTimeout(() => {
-                        document.body.removeChild(iframe);
-                    }, 2000);
-                });
-            }
-            
-            // Generate download links using various services
-            getDownloadLinks(videoId, format, quality) {
-                const services = {
-                    mp4: {
-                        '144p': `https://ytdl.vercel.app/api/download?url=https://youtube.com/watch?v=${videoId}&quality=144p`,
-                        '360p': `https://ytdl.vercel.app/api/download?url=https://youtube.com/watch?v=${videoId}&quality=360p`,
-                        '480p': `https://ytdl.vercel.app/api/download?url=https://youtube.com/watch?v=${videoId}&quality=480p`,
-                        '720p': `https://ytdl.vercel.app/api/download?url=https://youtube.com/watch?v=${videoId}&quality=720p`,
-                        '1080p': `https://ytdl.vercel.app/api/download?url=https://youtube.com/watch?v=${videoId}&quality=1080p`
-                    },
-                    mp3: {
-                        '128kbps': `https://ytdl.vercel.app/api/download?url=https://youtube.com/watch?v=${videoId}&quality=128kbps`,
-                        '192kbps': `https://ytdl.vercel.app/api/download?url=https://youtube.com/watch?v=${videoId}&quality=192kbps`,
-                        '320kbps': `https://ytdl.vercel.app/api/download?url=https://youtube.com/watch?v=${videoId}&quality=320kbps`
-                    }
-                };
-                
-                return services[format]?.[quality] || 
-                       `https://loader.to/api/button/?url=https://youtube.com/watch?v=${videoId}&f=${format}&q=${quality}`;
-            }
-            
-            // Get all available qualities for a format
-            getAvailableQualities(format) {
-                if (format === 'mp4') {
-                    return ['144p', '360p', '480p', '720p', '1080p'];
-                } else {
-                    return ['128kbps', '192kbps', '320kbps'];
-                }
-            }
-        }
-        
-        // DOM Elements
-        const elements = {
-            youtubeUrl: document.getElementById('youtubeUrl'),
-            getLinksBtn: document.getElementById('getLinksBtn'),
-            loading: document.getElementById('loading'),
-            errorBox: document.getElementById('errorBox'),
-            errorMessage: document.getElementById('errorMessage'),
-            errorTips: document.getElementById('errorTips'),
-            resultSection: document.getElementById('resultSection'),
-            videoThumbnail: document.getElementById('videoThumbnail'),
-            videoTitle: document.getElementById('videoTitle'),
-            videoChannel: document.getElementById('videoChannel'),
-            videoViews: document.getElementById('videoViews'),
-            videoDuration: document.getElementById('videoDuration'),
-            videoDate: document.getElementById('videoDate'),
-            qualityButtons: document.getElementById('qualityButtons'),
-            formatButtons: document.getElementById('formatButtons'),
-            downloadLink: document.getElementById('downloadLink'),
-            notification: document.getElementById('notification'),
-            notificationText: document.getElementById('notificationText')
-        };
-        
-        // Initialize downloader
-        const downloader = new YouTubeDownloader();
-        
-        // Show notification
-        function showNotification(message, type = 'success') {
-            elements.notificationText.textContent = message;
-            elements.notification.className = `notification ${type}`;
-            elements.notification.classList.add('show');
-            
-            setTimeout(() => {
-                elements.notification.classList.remove('show');
-            }, 3000);
-        }
-        
-        // Update download link
-        function updateDownloadLink() {
-            if (downloader.currentVideoId) {
-                const link = downloader.getDownloadLinks(
-                    downloader.currentVideoId,
-                    downloader.currentFormat,
-                    downloader.currentQuality
-                );
-                
-                elements.downloadLink.href = link;
-                
-                // Update download text
-                const formatText = downloader.currentFormat === 'mp4' ? 'ভিডিও' : 'অডিও';
-                elements.downloadLink.innerHTML = `<i class="fas fa-download"></i> ${formatText} ডাউনলোড করুন (${downloader.currentQuality})`;
-            }
-        }
-        
-        // Update quality buttons
-        function updateQualityButtons(format) {
-            const qualities = downloader.getAvailableQualities(format);
-            elements.qualityButtons.innerHTML = '';
-            
-            qualities.forEach(quality => {
-                const button = document.createElement('div');
-                button.className = 'quality-btn';
-                if (quality === downloader.currentQuality) {
-                    button.classList.add('active');
-                }
-                button.textContent = quality;
-                button.dataset.quality = quality;
-                
-                button.addEventListener('click', function() {
-                    // Remove active class from all buttons
-                    document.querySelectorAll('.quality-btn').forEach(btn => {
-                        btn.classList.remove('active');
-                    });
-                    
-                    // Add active class to clicked button
-                    this.classList.add('active');
-                    
-                    // Update current quality
-                    downloader.currentQuality = this.dataset.quality;
-                    
-                    // Update download link
-                    updateDownloadLink();
-                    
-                    showNotification(`কোয়ালিটি সিলেক্ট: ${quality}`);
-                });
-                
-                elements.qualityButtons.appendChild(button);
-            });
-        }
-        
-        // Display video info
-        function displayVideoInfo(info) {
-            // Set thumbnail
-            elements.videoThumbnail.src = info.thumbnail;
-            elements.videoThumbnail.style.display = 'block';
-            elements.videoThumbnail.onerror = function() {
-                this.src = `https://img.youtube.com/vi/${downloader.currentVideoId}/hqdefault.jpg`;
-            };
-            
-            // Set video info
-            elements.videoTitle.textContent = info.title;
-            elements.videoChannel.textContent = info.channel;
-            elements.videoViews.textContent = info.views;
-            elements.videoDuration.textContent = info.duration;
-            elements.videoDate.textContent = info.date;
-            
-            // Update download link
-            updateDownloadLink();
-            
-            // Show result section
-            elements.resultSection.style.display = 'block';
-            
-            // Scroll to result
-            elements.resultSection.scrollIntoView({ behavior: 'smooth' });
-            
-            showNotification('ভিডিও প্রস্তুত! ডাউনলোড করুন');
-        }
-        
-        // Process YouTube URL
-        async function processYouTubeUrl(url) {
-            // Show loading
-            elements.loading.style.display = 'block';
-            elements.errorBox.style.display = 'none';
-            elements.resultSection.style.display = 'none';
-            
-            // Disable button
-            elements.getLinksBtn.disabled = true;
-            elements.getLinksBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> প্রসেসিং...';
-            
+
+            statusMessage.textContent = '🔍 जानकारी प्राप्त की जा रही है...';
+            downloadBtn.disabled = true; // बटन को डिसेबल करो
+
             try {
-                // Extract video ID
-                const videoId = downloader.extractVideoId(url);
-                
-                if (!videoId) {
-                    throw new Error('ইউটিউব ভিডিও আইডি পাওয়া যায়নি। লিংকটি চেক করুন।');
-                }
-                
-                downloader.currentVideoId = videoId;
-                
-                // Get video info
-                const videoInfo = await downloader.getVideoInfo(videoId);
-                downloader.videoInfo = videoInfo;
-                
-                // Hide loading
-                elements.loading.style.display = 'none';
-                
-                // Update quality buttons for current format
-                updateQualityButtons(downloader.currentFormat);
-                
-                // Display video info
-                displayVideoInfo(videoInfo);
-                
-            } catch (error) {
-                console.error('Error:', error);
-                
-                // Hide loading
-                elements.loading.style.display = 'none';
-                
-                // Show error
-                elements.errorMessage.textContent = error.message;
-                elements.errorTips.innerHTML = `
-                    <div style="margin-top: 15px;">
-                        <p><strong>সঠিক ইউটিউব লিংক ফরম্যাট:</strong></p>
-                        <ul style="margin-top: 10px; padding-left: 20px;">
-                            <li>https://www.youtube.com/watch?v=VIDEO_ID</li>
-                            <li>https://youtu.be/VIDEO_ID</li>
-                            <li>https://www.youtube.com/embed/VIDEO_ID</li>
-                        </ul>
-                    </div>
-                `;
-                elements.errorBox.style.display = 'block';
-                
-                showNotification('ইউটিউব লিংক সঠিক নয়!', 'error');
-            }
-            
-            // Re-enable button
-            elements.getLinksBtn.disabled = false;
-            elements.getLinksBtn.innerHTML = '<i class="fas fa-bolt"></i> ডাউনলোড লিংক পেতে ক্লিক করুন';
-        }
-        
-        // Event Listeners
-        elements.getLinksBtn.addEventListener('click', () => {
-            const url = elements.youtubeUrl.value.trim();
-            
-            if (url) {
-                processYouTubeUrl(url);
-            } else {
-                showNotification('দয়া করে ইউটিউব ভিডিও লিংক দিন!', 'error');
-            }
-        });
-        
-        // Example links
-        document.querySelectorAll('.example-link').forEach(link => {
-            link.addEventListener('click', function() {
-                const url = this.dataset.url;
-                elements.youtubeUrl.value = url;
-                processYouTubeUrl(url);
-            });
-        });
-        
-        // Format buttons
-        document.querySelectorAll('.format-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                // Remove active class from all buttons
-                document.querySelectorAll('.format-btn').forEach(b => {
-                    b.classList.remove('active');
+                const response = await fetch(API_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-rapidapi-host': RAPID_API_HOST,
+                        'x-rapidapi-key': RAPID_API_KEY
+                    },
+                    body: JSON.stringify({ url: url })
                 });
-                
-                // Add active class to clicked button
-                this.classList.add('active');
-                
-                // Update current format
-                downloader.currentFormat = this.dataset.format;
-                
-                // Reset to default quality for the format
-                if (downloader.currentFormat === 'mp4') {
-                    downloader.currentQuality = '720p';
-                } else {
-                    downloader.currentQuality = '192kbps';
+
+                // HTTP एरर चेक करना
+                if (!response.ok) {
+                    throw new Error(`HTTP Error! Status: ${response.status}`);
                 }
+
+                const data = await response.json();
                 
-                // Update quality buttons
-                updateQualityButtons(downloader.currentFormat);
-                
-                // Update download link
-                updateDownloadLink();
-                
-                const formatText = downloader.currentFormat === 'mp4' ? 'ভিডিও' : 'অডিও';
-                showNotification(`ফরম্যাট সিলেক্ট: ${formatText}`);
-            });
-        });
-        
-        // Enter key support
-        elements.youtubeUrl.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                elements.getLinksBtn.click();
+                // API एरर चेक करना
+                if (data.error) {
+                    throw new Error(`API Error: ${data.error}`);
+                }
+
+                displayResults(data);
+
+            } catch (error) {
+                console.error('Download Error:', error);
+                resultsDiv.innerHTML = `<p class="error-message">❌ डाउनलोड जानकारी प्राप्त करने में कोई त्रुटि हुई। कृपया URL की जाँच करें या बाद में प्रयास करें।</p>`;
+            } finally {
+                downloadBtn.disabled = false; // बटन को फिर से एनेबल करो
+                statusMessage.textContent = ''; // स्टेटस मैसेज क्लियर करो
             }
-        });
-        
-        // URL validation on input
-        elements.youtubeUrl.addEventListener('input', function() {
-            const url = this.value.trim();
-            if (url.includes('youtube.com') || url.includes('youtu.be')) {
-                this.style.borderColor = '#00ff00';
-            } else {
-                this.style.borderColor = 'rgba(255, 0, 0, 0.4)';
-            }
-        });
-        
-        // Initialize
-        window.addEventListener('load', () => {
-            // Optional: Auto-process if URL is already in input
-            // const initialUrl = elements.youtubeUrl.value;
-            // if (initialUrl) {
-            //     processYouTubeUrl(initialUrl);
-            // }
-        });
-        
-        // Service Worker for better performance
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js').catch(console.error);
         }
+
+        // रिजल्ट्स को डिस्प्ले करने का फंक्शन
+        function displayResults(data) {
+            if (!data.medias || data.medias.length === 0) {
+                resultsDiv.innerHTML = `<p class="error-message">⚠️ इस URL के लिए कोई डाउनलोड लिंक नहीं मिला।</p>`;
+                return;
+            }
+
+            let html = '<h2>⬇️ डाउनलोड लिंक्स उपलब्ध</h2>';
+            
+            // वीडियो/ऑडियो लिंक्स को लूप करें
+            data.medias.forEach((media, index) => {
+                const quality = media.quality || 'Unknown Quality';
+                const extension = media.extension || 'file';
+                const type = media.type || 'Media';
+                const size = media.data_size ? (media.data_size / 1024 / 1024).toFixed(2) + ' MB' : 'Unknown Size';
+                
+                html += `
+                    <a href="${media.url}" class="media-link" target="_blank" download>
+                        <strong>${type.toUpperCase()}:</strong> ${quality} (${extension}) - ${size}
+                        <br>
+                        <small>लिंक पर क्लिक करें और डाउनलोड करें।</small>
+                    </a>
+                `;
+            });
+
+            resultsDiv.innerHTML = html;
+        }
+
     </script>
 </body>
 </html>
