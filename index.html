@@ -516,28 +516,22 @@
 
     <script>
         /**
-         * findAudioStreams(data) - Finds and normalizes audio stream candidates.
+         * findAudioStreams(data) - Finds and normalizes ALL stream candidates (including video/audio metadata).
          * (Your provided robust helper function)
          */
         function findAudioStreams(data){
           if(!data || typeof data !== 'object') return [];
 
-          // collect possible arrays/fields that might contain streams
           const buckets = [];
-
-          // common places
           ['medias','formats','streams','results','downloads','audioStreams','videoStreams','items','results','files','videos'].forEach(k=>{
             if(Array.isArray(data[k])) buckets.push(...data[k]);
           });
 
-          // videos.items path
           if(data.videos && Array.isArray(data.videos.items)) buckets.push(...data.videos.items);
 
-          // top-level single urls
           const tops = ['url','videoUrl','downloadUrl','source','downloadURL','sourceUrl','mediaUrl'];
           tops.forEach(k => { if(data[k]) buckets.push({ url: data[k], sourceKey: 'top.'+k }); });
 
-          // normalize and keep entries with URLs
           const norm = buckets.map(it=>{
             if(!it || typeof it !== 'object') return null;
             const url = it.url || it.downloadUrl || it.streamUrl || it.mediaUrl || it.source || it.link || it.videoUrl || null;
@@ -565,16 +559,17 @@
             const mt = it.mimeType || '';
             const ext = (it.extension || '').toLowerCase();
             const lu = (it.url || '').toLowerCase();
+            const hasVideoResolution = it.height > 0 || parseRes(it) > 0;
 
             // 1) direct audio mime
-            if(mt.startsWith('audio/')) { audioCandidates.push(it); continue; }
+            if(mt.startsWith('audio/') && !hasVideoResolution) { audioCandidates.push(it); continue; }
 
             // 2) extension-based audio (mp3,m4a,aac,opus)
-            if(['mp3','m4a','aac','opus'].includes(ext)) { audioCandidates.push(it); continue; }
+            if(['mp3','m4a','aac','opus'].includes(ext) && !hasVideoResolution) { audioCandidates.push(it); continue; }
 
             // 3) urls containing typical audio indicators
-            if(lu.includes('.m4a') || lu.includes('.mp3') || lu.includes('mime=audio') || lu.includes('ratebypass') && lu.includes('itag=')) { audioCandidates.push(it); continue; }
-            
+            if((lu.includes('.m4a') || lu.includes('.mp3') || lu.includes('mime=audio') || (lu.includes('ratebypass') && lu.includes('itag='))) && !hasVideoResolution) { audioCandidates.push(it); continue; }
+
             // 4) if known combined tag (like audioBitrate) is present on a video stream
             if(it.height && it.bitrate && mt.startsWith('video/')) { combinedFallbacks.push(it); continue; }
 
@@ -582,21 +577,13 @@
             if((it.quality||'').toString().toLowerCase().includes('kbps') || (it.quality||'').toString().toLowerCase().includes('audio')) { audioCandidates.push(it); continue; }
           }
 
-          // dedupe by URL
-          const uniq = [];
-          const seen = new Set();
-          audioCandidates.forEach(a => { if(a.url && !seen.has(a.url)){ seen.add(a.url); uniq.push(a); } });
-
-          if(uniq.length) return uniq;
-          
-          const uniq2 = [];
-          const seen2 = new Set();
-          combinedFallbacks.forEach(a => { 
-             // Only include combined streams if they are MP4 or WebM and have a reasonable resolution
-             if(a.url && !seen2.has(a.url) && (a.extension === 'mp4' || a.extension === 'webm') && a.height > 0){ seen2.add(a.url); uniq2.push(a); } 
+          const finalNormList = norm.map(it => {
+              it.isAudioOnlyCandidate = audioCandidates.some(a => a.url === it.url);
+              it.isCombinedCandidate = combinedFallbacks.some(c => c.url === it.url);
+              return it;
           });
           
-          return uniq2;
+          return finalNormList;
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -829,40 +816,39 @@
                 
                 // **STEP 2: Filter the streams based on file type and audio presence**
                 
-                // Separate Audio-only streams
-                const audios = allStreams.filter(it => it.extension === 'mp3' || it.extension === 'm4a' || it.mimeType.includes('audio/')); 
-
-                // Filter MP4 streams (focus on guaranteed combined/muxed streams)
+                // Filter Audio-only streams
+                // NOTE: We rely on the robust helper to identify the streams, 
+                // but filter only those that are explicitly identified as audio candidates/extensions.
+                const audios = allStreams.filter(it => it.isAudioOnlyCandidate || it.mimeType.includes('audio/')); 
+                
+                // Filter MP4 streams - Now shows ALL video streams
                 const mp4s = allStreams.filter(it => {
                     const res = parseRes(it);
                     const isMp4 = it.extension === 'mp4' || it.mimeType.includes('video/mp4');
                     
                     if (!isMp4) return false;
                     
-                    if (isAudioOnly(it)) return false; 
+                    // Exclude explicit audio-only streams
+                    if (isAudioOnly(it) || it.isAudioOnlyCandidate) return false; 
                     
-                    // Heuristic 1: Low resolution videos are often muxed
-                    if (res > 0 && res <= 480) return true; 
-
-                    // Heuristic 2: Check for explicit API hints (audio bitrate, hasAudio flag) on higher res videos
-                    const hasAudioProperty = (it.bitrate || it.hasAudio === true);
-                    if (res > 480 && hasAudioProperty) return true;
+                    // Show ALL valid video resolutions (Muxed or Demuxed)
+                    if (res > 0) return true;
 
                     return false;
                 });
                 
-                // Filter WebM streams (similar logic, prioritizing muxed)
+                // Filter WebM streams - Now shows ALL video streams
                 const webms = allStreams.filter(it => {
                     const res = parseRes(it);
                     const isWebM = it.extension === 'webm' || it.mimeType.includes('video/webm');
                     
                     if (!isWebM) return false;
-                    if (isAudioOnly(it)) return false;
                     
-                    if (res > 0 && res <= 480) return true;
+                    // Exclude explicit audio-only streams
+                    if (isAudioOnly(it) || it.isAudioOnlyCandidate) return false; 
                     
-                    const hasAudioProperty = (it.bitrate || it.hasAudio === true);
-                    if (res > 480 && hasAudioProperty) return true;
+                    // Show ALL valid video resolutions (Muxed or Demuxed)
+                    if (res > 0) return true;
 
                     return false;
                 });
@@ -875,8 +861,8 @@
 
                 // --- Rendering logic ---
                 let headerHtml = '';
-                if(format === 'mp4') headerHtml = '<h3><i class="fas fa-video"></i> MP4 Download Options (Audio Included)</h3>';
-                else if(format === 'webm') headerHtml = '<h3><i class="fas fa-video"></i> WebM Download Options</h3>';
+                if(format === 'mp4') headerHtml = '<h3><i class="fas fa-video"></i> MP4 Download Options (Warning: High-res may lack audio)</h3>';
+                else if(format === 'webm') headerHtml = '<h3><i class="fas fa-video"></i> WebM Download Options (Warning: High-res may lack audio)</h3>';
                 else if(format === 'mp3') headerHtml = '<h3><i class="fas fa-music"></i> MP3 Audio Download Options</h3>';
                 else if(format === 'thumbnail') headerHtml = '<h3><i class="fas fa-image"></i> Thumbnail Download Options</h3>';
                 
@@ -887,7 +873,7 @@
                     if(mp4sS.length){
                         mp4sS.forEach(it=> html += makeRow(it));
                     } else {
-                        html += '<div class="small" style="color:var(--text-medium);padding:10px 0;">No guaranteed audio/video combined MP4 formats found. Try WebM or Audio.</div>';
+                        html += '<div class="small" style="color:var(--text-medium);padding:10px 0;">No MP4 video formats found.</div>';
                     }
                 } else if(format === 'webm'){
                     html += headerHtml;
@@ -902,9 +888,11 @@
                         audiosS.forEach(it=> html += makeRow(it));
                     } else {
                         // Combined Stream Fallback: Show muxed MP4/WebM if no audio-only streams are found
-                        if(mp4sS.length > 0 || webmsS.length > 0){
-                            html += '<div class="small" style="color:var(--text-medium);padding:10px 0;">No audio-only streams found. Showing combined video/audio streams as fallback.</div>';
-                            sortAsc([...mp4sS, ...webmsS]).forEach(it=> html += makeRow(it));
+                        // We will show *all* available combined streams found by the robust helper if no pure audio streams exist.
+                        const combinedFallbacks = allStreams.filter(it => it.isCombinedCandidate);
+                        if(combinedFallbacks.length > 0){
+                            html += '<div class="small" style="color:var(--text-medium);padding:10px 0;">No dedicated audio streams found. Showing combined video/audio streams as fallback.</div>';
+                            sortAsc(combinedFallbacks).forEach(it=> html += makeRow(it));
                         } else {
                             html += '<div class="small" style="color:var(--text-medium);padding:10px 0;">No audio formats found.</div>';
                         }
