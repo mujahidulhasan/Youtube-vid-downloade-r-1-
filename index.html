@@ -14,7 +14,6 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            /* **৬. বাংলা এবং ইংরেজির জন্য ফন্ট সেটিং** */
             font-family: 'Noto Sans', 'Hind Siliguri', sans-serif;
         }
 
@@ -43,8 +42,7 @@
             --sidebar-text: #ecf0f1;
             --sidebar-hover: #34495e;
         }
-        
-        /* **১. মোবাইল ফিট: পুরো স্ক্রিন ব্যবহার করার জন্য** */
+
         body {
             background-color: var(--body-bg);
             color: var(--text-dark);
@@ -178,25 +176,30 @@
             padding: 15px 0;
         }
         
-        /* **৩. ভিডিও তথ্য বিন্যাস (ডিউরেশন বামে, ভিউজ ডানে, টাইটেল মাঝে)** */
+        /* **ভিডিও তথ্য বিন্যাস (টাইটেল, ডিউরেশন/ভিউজ সেটিং)** */
         .video-info {
-            display: flex; 
-            flex-wrap: wrap; 
-            align-items: center;
-            gap: 10px;
+            /* flex: রিমুভ করা হলো যাতে h3 এবং div#video-duration উপরে নিচে আসে */
+            margin-bottom: 10px; /* স্ট্যাটাস থেকে টাইটেলের দূরত্ব */
         }
 
         .video-info h3 {
-            flex-grow: 1; 
             font-size: 18px;
             font-weight: 900;
             color: var(--primary-blue);
             margin: 0; 
-            order: 2; 
-            min-width: 50%; 
+            margin-bottom: 10px; /* টাইটেল এবং স্ট্যাটাস বারের মধ্যে গ্যাপ */
+        }
+        
+        /* **ভিডিও ডিউরেশন এবং ভিউজ বার** */
+        #video-duration {
+            display: flex;
+            justify-content: space-between; /* ডিউরেশন বামে, ভিউজ ডানে */
+            align-items: center;
+            /* **ছবির বিন্যাসের জন্য মার্জিন/প্যাডিং ঠিক করা হলো** */
+            margin-top: 5px; 
         }
 
-        .video-info p {
+        #video-duration p {
             font-size: 14px;
             color: var(--text-medium);
             font-weight: 600;
@@ -204,14 +207,6 @@
             display: flex;
             align-items: center;
             gap: 5px;
-        }
-        
-        .video-info .duration-info {
-            order: 1; 
-        }
-        
-        .video-info .views-info {
-            order: 3; 
         }
 
         .thumbnail-container {
@@ -232,8 +227,8 @@
             height: 100%;
             object-fit: cover;
         }
-
-        /* **৪. ফরম্যাট বাটন গ্যাপ রিমুভ** */
+        
+        /* **ফরম্যাট বাটন গ্যাপ রিমুভ (অপরিবর্তিত)** */
         .format-selection {
             display: flex;
             justify-content: space-around;
@@ -308,13 +303,12 @@
             display: flex;
             align-items: center;
             gap: 5px;
-            /* **১. আন্ডারলাইন রিমুভ এবং ফন্ট ঠিক রাখা** */
             text-decoration: none; 
             font-family: 'Noto Sans', 'Hind Siliguri', sans-serif; 
         }
 
         .download-item a {
-            text-decoration: none; /* নিশ্চিত করা হলো */
+            text-decoration: none; 
         }
         
         .download-btn-small:hover {
@@ -543,7 +537,7 @@
             const API_URL = "https://" + API_HOST + "/v2/video/details";
             const STORAGE_KEY = 'rapidapi_key_v2';
 
-            // --- [২. ডিউরেশন ফরমেট পরিবর্তনের জন্য ফাংশন] ---
+            // ডিউরেশন ফরমেট পরিবর্তনের জন্য ফাংশন
             function formatDuration(seconds) {
                 if(!seconds) return 'N/A';
                 seconds = parseInt(seconds, 10);
@@ -694,7 +688,7 @@
                     const title = data.title || data.name || 'Untitled';
                     const durationSecs = data.lengthSeconds || data.duration || data.durationSeconds || null;
                     
-                    // **২. ভিউ কাউন্ট ভাষা পরিবর্তন: ইংরেজি (US) ফরমেটে**
+                    // ভিউ কাউন্ট: ইংরেজি (US) ফরমেটে
                     const viewCount = data.viewCount || data.viewCountText || null;
                     const viewsText = viewCount ? new Intl.NumberFormat('en-US').format(viewCount) : '';
                     
@@ -703,12 +697,12 @@
 
                     videoTitle.textContent = title;
                     
-                    // **৩. ডিউরেশন ও ভিউজ আইকন সহ বাম ও ডান দিকে সেট করা**
+                    // **ছবি অনুযায়ী ডিউরেশন বামে এবং ভিউজ ডানে সেট করা**
                     const formattedDuration = formatDuration(durationSecs);
                     
                     videoDurationContainer.innerHTML = `
-                        <p class="duration-info"><i class="fas fa-clock"></i> ${formattedDuration}</p>
-                        ${viewsText ? `<p class="views-info"><i class="fas fa-eye"></i> ${viewsText} views</p>` : ''}
+                        <p><i class="fas fa-clock"></i> ${formattedDuration}</p>
+                        ${viewsText ? `<p><i class="fas fa-eye"></i> ${viewsText} views</p>` : ''}
                     `;
                     
                     videoThumbnail.src = bestThumb || '';
@@ -761,7 +755,7 @@
 
                 const fallbackUrl = data.url || data.videoUrl || data.downloadUrl || data.source || data.downloadURL || null;
 
-                // **৫. ডুপ্লিকেট ফরম্যাট অপসারণের জন্য পরিবর্তন**
+                // ডুপ্লিকেট ফরম্যাট অপসারণ
                 const uniqueStreams = new Map();
                 lists.forEach(it=>{
                     const u = it.url || it.downloadUrl || it.streamUrl || it.mediaUrl || it.source || it.link;
@@ -778,7 +772,7 @@
                     return (it.mimeType||'').toLowerCase().includes('audio/') || (it.extension||'').toLowerCase().includes('m4a') || (it.extension||'').toLowerCase().includes('mp3') || it.itag==140;
                 }
 
-                // **৫. ক্রস-ফরম্যাট ফিল্টারিং: mp4 সেকশনে শুধু mp4 থাকবে**
+                // ক্রস-ফরম্যাট ফিল্টারিং: mp4 সেকশনে শুধু mp4 থাকবে
                 const mp4s = streamArr.filter(it => (it.mimeType||'').toLowerCase().includes('video/mp4') || (it.extension||'').toLowerCase().includes('mp4'));
                 const webms = streamArr.filter(it => (it.mimeType||'').toLowerCase().includes('video/webm') || (it.extension||'').toLowerCase().includes('webm'));
                 const audios = streamArr.filter(it => isAudioOnly(it)); 
@@ -799,7 +793,7 @@
                 const webmsS = sortAsc(webms);
                 const audiosS = audios.filter(item => item.url); 
 
-                // **৩. আইকন সহ হেডার যোগ করা**
+                // আইকন সহ হেডার যোগ করা
                 let headerHtml = '';
                 if(format === 'mp4') headerHtml = '<h3><i class="fas fa-video"></i> MP4 Download Options</h3>';
                 else if(format === 'webm') headerHtml = '<h3><i class="fas fa-video"></i> WebM Download Options</h3>';
@@ -875,7 +869,7 @@
                     });
                 }
                 
-                // **৪. শেষ ডাউনলোড আইটেম থেকে বর্ডার রিমুভ করা (সাদা দাগ)**
+                // শেষ ডাউনলোড আইটেম থেকে বর্ডার রিমুভ করা
                 const items = downloadOptionsContainer.querySelectorAll('.download-item');
                 if(items.length > 0) {
                     items[items.length - 1].style.borderBottom = 'none';
@@ -887,7 +881,7 @@
                 return String(u||'').replace(/"/g,'&quot;').replace(/'/g,"'");
             }
 
-            // **৪. ডাউনলোড বাটন তৈরি এবং কপি বাটন অপসারণ (makeRow function)**
+            // ডাউনলোড বাটন তৈরি (কপি বাটন নেই, আন্ডারলাইন নেই)
             function makeRow(it){
                 const url = it.url || it.downloadUrl || it.streamUrl || it.mediaUrl || it.source || it.link || '';
                 const quality = it.quality || it.quality_label || (it.height? (it.height + 'p') : '') || (it.format || '');
@@ -903,18 +897,10 @@
                         </div>
                         <div style="display:flex;gap:8px;align-items:center">
                             ${url ? `<a class="download-btn-small" href="${safe(url)}" target="_blank" rel="noreferrer"><i class="fas fa-download"></i> Download</a>` : '<span style="color:var(--text-medium)">No URL</span>'}
-                            
-                            </div>
+                        </div>
                     </div>
                 `;
             }
-
-            // copy link function (kept for safety but unused)
-            window.copyLink = function(url){
-                if(!url) return;
-                navigator.clipboard && navigator.clipboard.writeText(url);
-                alert('Link copied to clipboard');
-            };
 
             // initial state: hide loaded preview
             initialPreview.style.display = 'flex';
