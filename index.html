@@ -1,674 +1,677 @@
-<!doctype html>
+নিচে আপনার পুরো HTML ফাইল — কেবল ফুটারটায় পরিবর্তন করে `Powered by Mujahidul hasan` করে দিয়েছি। একদমই আপনার দেওয়া কোডের অন্য কোনও অংশ বদলানো হয়নি — কপি করে আপনার `index.html` রিপ্লেস করে দিন।
+
+```html
+<!DOCTYPE html>
 <html lang="bn">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Pro YouTube Downloader — Clean UI</title>
-<link rel="icon" href="data:,">
-<style>
-  /* ---------- Theme ---------- */
-  :root{
-    --bg:#041022; --card:#071827; --muted:#9fb6c8; --accent:#06b6d4;
-    --glass: rgba(255,255,255,0.03); --glass-2: rgba(255,255,255,0.02);
-    --success:#6ee7b7; --danger:#ff6b6b;
-  }
-  *{box-sizing:border-box}
-  body{
-    margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;
-    background:linear-gradient(180deg,#021226,#05203a); color:#eaf6fb;
-    -webkit-font-smoothing:antialiased; padding:16px;
-  }
-  .wrap{max-width:980px;margin:0 auto}
-  .card{background:linear-gradient(180deg,var(--card), #041623); border-radius:14px; padding:16px; box-shadow: 0 8px 40px rgba(2,6,15,0.6);}
-  h1{margin:0;font-size:20px}
-  .lead{color:var(--muted);font-size:13px;margin-top:6px}
-  label{display:block;color:var(--muted);font-size:13px;margin-top:12px}
-  input[type=text], input[type=url]{
-    width:100%; padding:12px 14px; border-radius:10px; border:1px solid rgba(255,255,255,0.04);
-    background:transparent; color:inherit; font-size:14px;
-  }
-  .row{display:flex;gap:8px;align-items:center}
-  .row.col{flex-direction:column}
-  .btn{background:var(--accent); color:#032; padding:10px 12px; border-radius:10px; border:0; font-weight:700; cursor:pointer}
-  .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04); color:var(--muted)}
-  .btn.small{padding:6px 8px;font-size:13px;border-radius:8px}
-  .note{color:var(--muted);font-size:13px;margin-top:8px}
-  .status{margin-top:8px;color:var(--muted);font-size:13px}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Downloader - কোডিং পার্টনার</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        /* CSS স্টাইল শুরু */
+        
+        /* গ্লোবাল স্টাইল ও ফন্ট সেটআপ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Noto Sans', sans-serif;
+        }
 
-  /* meta card */
-  .meta{display:flex;gap:12px;align-items:center;margin-top:14px;padding:10px;border-radius:12px;background:var(--glass)}
-  .meta .thumb{width:140px;height:80px;border-radius:8px;object-fit:cover;flex:0 0 140px}
-  .meta .info{flex:1}
-  .meta .title{font-weight:800;font-size:16px}
-  .meta .sub{color:var(--muted);font-size:13px;margin-top:6px}
-  .meta .meta-row{color:var(--muted);font-size:12px;margin-top:8px}
+        :root {
+            /* কালার প্যালেট - ডে মোড (ডিফল্ট) */
+            --primary-blue: #3EAEFF;
+            --secondary-blue: #1abc9c; 
+            --text-dark: #333333;
+            --text-medium: #666666;
+            --background-grey: #f7f7f7;
+            --card-border-grey: #dcdcdc;
+            --body-bg: var(--background-grey);
+            --container-bg: #ffffff;
+            --sidebar-bg: #ffffff;
+            --sidebar-text: var(--text-dark);
+            --sidebar-hover: var(--background-grey);
+        }
 
-  /* tabs */
-  .tabs{display:flex;gap:8px;margin-top:12px}
-  .tab{flex:1;padding:10px;border-radius:10px;text-align:center;background:var(--glass-2); cursor:pointer; font-weight:700}
-  .tab.active{background:linear-gradient(90deg, rgba(6,182,212,0.12), rgba(71,118,230,0.08)); color:#e9ffff}
+        /* নাইট মোড */
+        body.dark-mode {
+            --text-dark: #ecf0f1;
+            --text-medium: #bdc3c7;
+            --background-grey: #2c3e50;
+            --body-bg: #1e272e;
+            --container-bg: #2c3e50;
+            --card-border-grey: #34495e;
+            --sidebar-bg: #2c3e50;
+            --sidebar-text: #ecf0f1;
+            --sidebar-hover: #34495e;
+        }
 
-  /* content lists */
-  .content{margin-top:12px}
-  .section-title{font-weight:800;margin-top:10px;margin-bottom:6px}
-  .formats{display:grid;gap:10px}
-  .format{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:10px;background:rgba(255,255,255,0.02)}
-  .format .left{max-width:66%}
-  .format .quality{font-weight:700}
-  .format .meta{color:var(--muted);font-size:13px;margin-top:6px}
-  .actions{display:flex;gap:8px;align-items:center}
+        body {
+            background-color: var(--body-bg);
+            color: var(--text-dark);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 20px 0;
+            transition: background-color 0.3s;
+        }
 
-  .link{padding:8px 10px;border-radius:8px;background:rgba(6,182,212,0.12);color:#dff9ff;text-decoration:none;font-weight:700}
-  .copy-btn{padding:6px 8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted);font-weight:700}
+        .container {
+            width: 100%;
+            max-width: 450px;
+            background-color: var(--container-bg);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            position: relative;
+            z-index: 10;
+        }
 
-  /* thumbs grid */
-  .thumb-grid{display:flex;gap:10px;flex-wrap:wrap}
-  .thumb-card{width:120px;border-radius:8px;overflow:hidden;background:var(--glass);padding:6px;text-align:center}
-  .thumb-card img{width:100%;height:70px;object-fit:cover;border-radius:6px}
+        /* হেডার স্টাইল */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            margin-bottom: 20px;
+        }
 
-  /* settings panel */
-  .settings{margin-top:12px;padding:10px;border-radius:10px;background:rgba(255,255,255,0.01)}
-  .field-row{display:flex;gap:8px;align-items:center;margin-top:8px}
-  .muted{color:var(--muted);font-size:13px}
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
 
-  /* raw */
-  .raw-toggle{display:flex;gap:8px;align-items:center;margin-top:10px}
-  pre.raw{white-space:pre-wrap;background:#021219;color:#9fe;padding:12px;border-radius:10px;margin-top:8px;max-height:340px;overflow:auto}
+        .logo .youtube-text {
+            color: var(--text-dark); 
+            font-weight: 900;
+        }
 
-  /* helper badges */
-  .badge{padding:4px 8px;border-radius:999px;background:rgba(255,255,255,0.03);font-size:12px;color:var(--muted)}
+        .logo .downloader-text {
+            color: var(--primary-blue); 
+            font-weight: 900;
+        }
 
-  @media(max-width:720px){
-    .meta{flex-direction:column;align-items:flex-start}
-    .meta .thumb{width:100%;height:160px;flex:auto}
-    .tabs{overflow:auto}
-    .tab{flex:unset;white-space:nowrap}
-  }
-</style>
+        .menu-icon i {
+            font-size: 24px;
+            color: var(--text-dark);
+            cursor: pointer;
+        }
+
+        /* মূল কার্ড স্টাইল */
+        .download-card {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        h2 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-medium);
+            margin-bottom: 10px;
+        }
+        
+        /* ইনপুট গ্রুপ স্টাইল */
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        #youtube-url {
+            padding: 12px 15px;
+            border: 1px solid var(--card-border-grey);
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            background-color: var(--container-bg);
+            color: var(--text-dark);
+        }
+
+        .generate-btn {
+            padding: 15px;
+            background-color: var(--primary-blue);
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* --- থাম্বনেইল: ড্যাশড বর্ডার --- */
+        .preview-section {
+            background-color: transparent;
+            border: 2px dashed var(--card-border-grey);
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            min-height: 150px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+        
+        /* যখন লোড হবে */
+        .preview-section.loaded {
+            border: none;
+            padding: 0;
+        }
+        
+        /* ডিফল্ট প্রিভিউ */
+        .initial-preview .video-icon {
+            font-size: 30px;
+            color: var(--text-medium);
+            margin-bottom: 10px;
+        }
+
+        .initial-preview p {
+            color: var(--text-medium);
+            font-size: 14px;
+        }
+
+        /* লোড হওয়া প্রিভিউ স্টাইল */
+        .loaded-preview {
+            display: none; 
+            width: 100%;
+        }
+        
+        .video-details {
+            padding: 15px 0;
+        }
+
+        .thumbnail-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9 অনুপাত */
+            background-color: var(--card-border-grey);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .thumbnail-container img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .video-info h3 {
+            font-size: 18px;
+            font-weight: 900;
+            color: var(--primary-blue); /* টাইটেল নীল */
+            margin-bottom: 3px;
+        }
+
+        .video-info p {
+            font-size: 14px;
+            color: var(--text-medium);
+            font-weight: 600; /* ডিউরেশন হাইলাইট */
+        }
+        
+        /* --- ফরম্যাট বাটন লেআউট ফিক্স (সিঙ্গেল লাইন) --- */
+        .format-selection {
+            display: flex;
+            justify-content: space-around;
+            gap: 5px;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            margin-bottom: 15px;
+            padding: 5px 0;
+            scrollbar-width: none;
+        }
+        
+        .format-selection::-webkit-scrollbar {
+            display: none;
+        }
+
+        .format-btn {
+            padding: 8px 10px;
+            border: 1px solid var(--card-border-grey);
+            background-color: var(--container-bg);
+            color: var(--text-medium);
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            flex-shrink: 0;
+            font-weight: 700;
+            transition: all 0.2s;
+        }
+        
+        .format-btn.active {
+            background-color: var(--primary-blue);
+            color: #ffffff;
+            border-color: var(--primary-blue);
+        }
+
+        /* ডাউনলোড অপশন স্টাইল */
+        .download-options-container {
+            margin-top: 15px;
+            border-top: 1px solid var(--card-border-grey);
+            padding-top: 15px;
+            display: none;
+            width: 100%;
+        }
+        
+        .download-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--card-border-grey);
+        }
+
+        /* --- ডাউনলোড বাটন কালার ফিক্স (নীল) --- */
+        .download-btn-small {
+            background-color: var(--primary-blue);
+            color: #ffffff;
+            padding: 8px 15px;
+            border: 1px solid var(--primary-blue);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .download-btn-small:hover {
+            background-color: #3598e3;
+        }
+        
+        /* --- ফরম্যাট ট্যাগ কালার ফিক্স (নীল) --- */
+        .format-tag {
+            background-color: var(--secondary-blue);
+            color: #ffffff;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+
+
+        /* সাইডবার (বার্গার মেনু) স্টাইল */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 280px;
+            height: 100%;
+            background-color: var(--sidebar-bg);
+            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            transition: right 0.3s ease-in-out;
+            padding: 20px;
+            overflow-y: auto; /* কন্টেন্ট বেশি হলে স্ক্রল করার জন্য */
+        }
+
+        .sidebar.open {
+            right: 0;
+        }
+
+        /* ক্লোজ বাটন এবং হেডার */
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        #close-sidebar {
+            font-size: 24px;
+            color: var(--text-dark);
+            cursor: pointer;
+            padding: 5px;
+        }
+        
+        .sidebar h3 {
+            color: var(--primary-blue);
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .sidebar-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            color: var(--sidebar-text);
+            border-bottom: 1px solid var(--card-border-grey);
+            cursor: pointer;
+        }
+        
+        .sidebar-item:hover {
+            background-color: var(--sidebar-hover);
+            padding-left: 5px;
+        }
+        
+        /* --- API ইনপুট সেকশন (এখন সাইডবারের মধ্যে) --- */
+        .sidebar-api-input {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid var(--card-border-grey);
+            border-radius: 8px;
+            background-color: var(--background-grey);
+        }
+        
+        .api-input-group {
+            display: flex;
+            align-items: center;
+            padding-bottom: 5px;
+        }
+
+        .api-input-group i {
+            color: var(--primary-blue);
+            margin-right: 10px;
+        }
+
+        #sidebar-api-key-input {
+            flex-grow: 1;
+            padding: 5px 0;
+            border: none;
+            outline: none;
+            background-color: transparent;
+            color: var(--text-dark);
+            font-family: monospace;
+        }
+
+        #sidebar-api-key-toggle {
+            cursor: pointer;
+            color: var(--text-medium);
+            padding-left: 10px;
+        }
+
+        /* ফুটার স্টাইল */
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+    </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card">
-      <h1>Pro YouTube Downloader</h1>
-      <div class="lead">Clean UI — organized Video / Audio / Thumbnail lists — settings for API key & preferences.</div>
 
-      <!-- API key -->
-      <label>RapidAPI Key (local)</label>
-      <div class="row">
-        <input id="apiKey" type="text" placeholder="Paste RapidAPI key" />
-        <button id="saveKey" class="btn ghost">Save</button>
-        <button id="showKey" class="btn small">Show</button>
-        <button id="clearKey" class="btn small">Clear</button>
-      </div>
-      <div class="note">Key stored locally in browser (for testing). In production, keep keys server-side.</div>
-
-      <!-- URL input -->
-      <label>YouTube URL or Video ID</label>
-      <div class="row" style="margin-top:8px">
-        <input id="videoInput" type="url" placeholder="https://youtu.be/xxx or https://www.youtube.com/watch?v=xxx" />
-        <button id="fetchBtn" class="btn">Fetch</button>
-      </div>
-      <div id="status" class="status"></div>
-
-      <!-- meta -->
-      <div id="meta" class="meta" style="display:none">
-        <img id="metaThumb" class="thumb" src="" alt="thumb">
-        <div class="info">
-          <div id="metaTitle" class="title">Title</div>
-          <div id="metaAuthor" class="sub">Channel</div>
-          <div id="metaStats" class="meta-row">Duration · Views · Published</div>
-        </div>
-      </div>
-
-      <!-- tabs -->
-      <div id="tabWrap" style="display:none">
-        <div class="tabs" id="tabs">
-          <div class="tab active" data-tab="video">Video</div>
-          <div class="tab" data-tab="audio">Audio</div>
-          <div class="tab" data-tab="thumbs">Thumbnails</div>
-          <div class="tab" data-tab="settings" id="openSettings">Settings</div>
-        </div>
-
-        <div class="content">
-          <!-- Video tab -->
-          <div id="videoTab">
-            <div class="section-title">MP4 / WebM Formats</div>
-            <div id="mp4Section" style="margin-top:6px">
-              <div class="muted">MP4</div>
-              <div id="mp4List" class="formats"></div>
+    <div class="container">
+        <header class="header">
+            <h1 class="logo">
+                <span class="youtube-text">YOUTUBE</span>
+                <span class="downloader-text">DOWNLOADER</span>
+            </h1>
+            <div class="menu-icon" id="menu-toggle">
+                <i class="fas fa-bars"></i>
             </div>
-            <div id="webmSection" style="margin-top:10px">
-              <div class="muted">WebM</div>
-              <div id="webmList" class="formats"></div>
+        </header>
+        
+        <main class="download-card">
+            
+            <section class="input-section">
+                <h2>Enter YouTube URL <i class="fas fa-info-circle info-icon"></i></h2>
+                <div class="input-group">
+                    <input type="text" id="youtube-url" placeholder="Enter YouTube Link/URL">
+                    <button class="generate-btn" id="generate-btn">Generate Video Content</button>
+                </div>
+            </section>
+
+            <section class="preview-section" id="preview-section">
+                
+                <div class="initial-preview" id="initial-preview">
+                    <i class="fas fa-film video-icon"></i>
+                    <p>Video Preview goes here</p>
+                </div>
+
+                <div class="loaded-preview" id="loaded-preview">
+                    <div class="thumbnail-container">
+                        <img id="video-thumbnail" src="" alt="Video Thumbnail">
+                    </div>
+                    
+                    <div class="video-details">
+                        <div class="video-info">
+                            <h3 id="video-title"></h3>
+                            <p id="video-duration"></p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="format-selection">
+                <button class="format-btn active" data-format="mp4" data-type="video">.mp4</button>
+                <button class="format-btn" data-format="webm" data-type="video">.webm</button>
+                <button class="format-btn" data-format="mp3" data-type="audio">.mp3</button>
+                <button class="format-btn" data-format="thumbnail" data-type="image">Thumb Download</button>
+            </section>
+            
+            <section class="download-options-container" id="download-options-container">
+                </section>
+            
+        </main>
+
+        <footer class="footer">
+            <p>Powered by Mujahidul hasan</p>
+        </footer>
+    </div>
+    
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h3>Menu</h3>
+            <span id="close-sidebar"><i class="fas fa-times"></i></span>
+        </div>
+        
+        <div class="sidebar-item">
+            <span><i class="fas fa-moon"></i> Day / Night Mode</span>
+            <label class="switch">
+                <input type="checkbox" id="dark-mode-toggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+        
+        <div class="sidebar-api-input">
+            <h4><i class="fas fa-code"></i> API Add (Private)</h4>
+            <div class="api-input-group">
+                <input type="password" id="sidebar-api-key-input" placeholder="Enter your private API key..." value="demoapikey12345">
+                <i class="fas fa-eye-slash" id="sidebar-api-key-toggle"></i>
             </div>
-            <div id="otherSection" style="margin-top:10px">
-              <div class="muted">Other</div>
-              <div id="otherList" class="formats"></div>
-            </div>
-          </div>
-
-          <!-- Audio tab -->
-          <div id="audioTab" style="display:none">
-            <div class="section-title">Audio Formats</div>
-            <div id="audioList" class="formats"></div>
-
-            <div style="margin-top:10px" class="muted">If no audio-only streams are available you can try extracting audio in-browser (experimental & may fail due to CORS/autoplay). Use server-side extraction (yt-dlp + ffmpeg) for reliable mp3.</div>
-            <div style="margin-top:8px">
-              <button id="extractBtn" class="btn ghost">Attempt client-side extract (experimental)</button>
-              <span id="extractStatus" class="muted" style="margin-left:8px"></span>
-            </div>
-          </div>
-
-          <!-- Thumbs tab -->
-          <div id="thumbsTab" style="display:none">
-            <div class="section-title">Thumbnails</div>
-            <div id="thumbGrid" class="thumb-grid"></div>
-          </div>
         </div>
-      </div>
+        
+    </div>
 
-      <!-- settings panel (toggle) -->
-      <div id="settingsPanel" class="settings" style="display:none">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div style="font-weight:800">Settings</div>
-          <div class="muted">You can hide this panel after saving</div>
-        </div>
+    <script>
+        /* জাভাস্ক্রিপ্ট লজিক শুরু */
+        document.addEventListener('DOMContentLoaded', () => {
+            const generateBtn = document.getElementById('generate-btn');
+            const formatBtns = document.querySelectorAll('.format-btn');
+            const initialPreview = document.getElementById('initial-preview');
+            const loadedPreview = document.getElementById('loaded-preview');
+            const previewSection = document.getElementById('preview-section');
+            const videoTitle = document.getElementById('video-title');
+            const videoDuration = document.getElementById('video-duration');
+            const videoThumbnail = document.getElementById('video-thumbnail');
+            const youtubeUrlInput = document.getElementById('youtube-url');
+            const downloadOptionsContainer = document.getElementById('download-options-container');
+            const sidebar = document.getElementById('sidebar');
+            const menuToggle = document.getElementById('menu-toggle');
+            const closeSidebar = document.getElementById('close-sidebar');
+            const darkModeToggle = document.getElementById('dark-mode-toggle');
+            const sidebarApiKeyInput = document.getElementById('sidebar-api-key-input');
+            const sidebarApiKeyToggle = document.getElementById('sidebar-api-key-toggle');
+            const body = document.body;
 
-        <div class="field-row">
-          <div style="flex:1">
-            <div class="muted">Default container preference</div>
-            <select id="prefContainer" style="width:100%;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:inherit">
-              <option value="mp4">Prefer MP4</option>
-              <option value="webm">Prefer WebM</option>
-            </select>
-          </div>
-          <div style="width:140px">
-            <div class="muted">Sort order</div>
-            <select id="prefSort" style="width:100%;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:inherit">
-              <option value="asc">Small → Large</option>
-              <option value="desc">Large → Small</option>
-            </select>
-          </div>
-        </div>
+            // ডেমো ডেটা
+            const demoVideoData = {
+                title: "The Ultimate Guide to Web Development (Full Course)",
+                duration: "Duration: 1:45:30",
+                thumbnail: "https://picsum.photos/450/253?random=1",
+                formats: {
+                    mp4: [
+                        { quality: '1080p', size: '73.04 MB' },
+                        { quality: '720p', size: '22.52 MB' },
+                        { quality: '480p', size: '12.92 MB' },
+                        { quality: '360p', size: '16.11 MB' },
+                    ],
+                    webm: [
+                        { quality: '720p', size: '18.90 MB' },
+                        { quality: '480p', size: '10.55 MB' },
+                        { quality: '360p', size: '8.21 MB' },
+                    ],
+                    mp3: [
+                        { quality: '256kbps', size: '2.11 MB' },
+                        { quality: '128kbps', size: '3.04 MB' },
+                        { quality: '48kbps', size: '1.02 MB' },
+                        { quality: 'low', size: '715.6 KB' },
+                    ],
+                }
+            };
+            
+            // --- ১. সাইডবার টগল ---
+            menuToggle.addEventListener('click', () => {
+                sidebar.classList.add('open');
+            });
+            
+            closeSidebar.addEventListener('click', () => {
+                sidebar.classList.remove('open');
+            });
+            
+            // --- ২. ডে-নাইট মোড টগল ---
+            darkModeToggle.addEventListener('change', () => {
+                if (darkModeToggle.checked) {
+                    body.classList.add('dark-mode');
+                } else {
+                    body.classList.remove('dark-mode');
+                }
+            });
 
-        <div class="field-row">
-          <label style="margin:0" class="muted"><input id="prefAudioFirst" type="checkbox" /> Prefer audio-included streams in Video list</label>
-        </div>
+            // --- ৩. API কী হাইড/আনহাইড (সাইডবার) ---
+            sidebarApiKeyToggle.addEventListener('click', () => {
+                if (sidebarApiKeyInput.type === 'password') {
+                    sidebarApiKeyInput.type = 'text';
+                    sidebarApiKeyToggle.classList.remove('fa-eye-slash');
+                    sidebarApiKeyToggle.classList.add('fa-eye');
+                } else {
+                    sidebarApiKeyInput.type = 'password';
+                    sidebarApiKeyToggle.classList.remove('fa-eye');
+                    sidebarApiKeyToggle.classList.add('fa-eye-slash');
+                }
+            });
 
-        <div style="margin-top:10px;display:flex;gap:8px">
-          <button id="saveSettings" class="btn">Save & Hide</button>
-          <button id="showRawToggle" class="btn ghost">Toggle raw JSON</button>
-        </div>
-        <div class="note" style="margin-top:8px">Tip: After saving settings you can hide this panel. Click "Settings" tab to reopen.</div>
-      </div>
+            // --- ৪. ভিডিও কনটেন্ট জেনারেট করা ---
+            generateBtn.addEventListener('click', () => {
+                const url = youtubeUrlInput.value.trim();
+                
+                if (url) {
+                    // ডেটা ইনজেক্ট করা
+                    videoTitle.textContent = demoVideoData.title;
+                    videoDuration.textContent = demoVideoData.duration;
+                    videoThumbnail.src = demoVideoData.thumbnail;
 
-      <!-- raw JSON -->
-      <div class="raw-toggle">
-        <button id="rawBtn" class="btn small">Show raw JSON</button>
-        <div class="muted" style="flex:1">Raw response (hidden by default). Use for debugging.</div>
-      </div>
-      <div id="rawWrap" style="display:none"><pre id="raw" class="raw"></pre></div>
+                    // প্রিভিউ স্টাইল আপডেট করা (ড্যাশড বর্ডার সরিয়ে দেওয়া)
+                    previewSection.classList.add('loaded');
+                    
+                    // ডিফল্ট প্রিভিউ লুকিয়ে লোড হওয়া প্রিভিউ দেখানো
+                    initialPreview.style.display = 'none';
+                    loadedPreview.style.display = 'block';
+                    
+                    // প্রথম ফরম্যাটটি ডিফল্টভাবে সক্রিয় করা ও তার ডাউনলোড অপশন দেখানো
+                    formatBtns.forEach(b => b.classList.remove('active'));
+                    formatBtns[0].classList.add('active');
+                    displayDownloadOptions('mp4', 'video');
+                    
+                    youtubeUrlInput.value = "https://youtube.com/watch?v=hbasm345ca2...";
+                    
+                } else {
+                    // যদি ইউআরএল না দেওয়া হয়, তাহলে প্রিভিউটি ডিফল্ট অবস্থায় ফিরে যাবে (ঐচ্ছিক)
+                    previewSection.classList.remove('loaded');
+                    initialPreview.style.display = 'flex';
+                    loadedPreview.style.display = 'none';
+                    downloadOptionsContainer.style.display = 'none';
+                    alert("দয়া করে একটি YouTube URL দিন।");
+                }
+            });
 
-    </div> <!-- card -->
-  </div> <!-- wrap -->
+            // --- ৫. ফরম্যাট বাটন ও ডাউনলোড অপশন হ্যান্ডলিং ---
+            formatBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // যদি প্রিভিউ লোড না হয় তবে কাজ করবে না
+                    if(initialPreview.style.display !== 'none') return;
+                    
+                    formatBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    
+                    const format = btn.getAttribute('data-format');
+                    const type = btn.getAttribute('data-type');
+                    
+                    displayDownloadOptions(format, type);
+                });
+            });
+            
+            // ডাউনলোড অপশন ডিসপ্লে ফাংশন
+            function displayDownloadOptions(format, type) {
+                downloadOptionsContainer.innerHTML = '';
+                
+                if (format === 'thumbnail') {
+                    // থাম্বনেইল ডাউনলোড অপশন
+                    downloadOptionsContainer.innerHTML = `
+                        <h3><i class="fas fa-image"></i> Thumbnail Download Options</h3>
+                        <div class="download-item">
+                            <div class="item-details">
+                                <span class="format-tag">JPG</span>
+                                <span>1080 x 720</span>
+                                <span class="size">~200 KB</span>
+                            </div>
+                            <button class="download-btn-small" onclick="handleDownload('${format}', 'hq')">
+                                <i class="fas fa-download"></i> Download
+                            </button>
+                        </div>
+                    `;
+                    downloadOptionsContainer.style.display = 'block';
+                    return;
+                }
+                
+                // ভিডিও/অডিও ডাউনলোড অপশন লোড
+                const options = demoVideoData.formats[format];
+                
+                let htmlContent = `<h3><i class="fas fa-${type === 'audio' ? 'music' : 'video'}"></i> ${format.toUpperCase()} Download Options</h3>`;
+                
+                options.forEach(item => {
+                    htmlContent += `
+                        <div class="download-item">
+                            <div class="item-details">
+                                <span class="format-tag">${type === 'audio' ? 'MP3' : format.toUpperCase()}</span>
+                                <span>${item.quality}</span>
+                                <span class="size">${item.size}</span>
+                            </div>
+                            <button class="download-btn-small" onclick="handleDownload('${format}', '${item.quality}')">
+                                <i class="fas fa-download"></i> Download
+                            </button>
+                        </div>
+                    `;
+                });
 
-<script>
-/* ----------------------------
-   Pro YouTube Downloader JS
-   - polished UI + settings + sorting
-   - client-side audio extract (experimental)
-   ---------------------------- */
+                downloadOptionsContainer.innerHTML = htmlContent;
+                downloadOptionsContainer.style.display = 'block';
+            }
+            
+            // --- ৬. ডেমো ডাউনলোড হ্যান্ডলিং ---
+            window.handleDownload = (format, quality) => {
+                alert(`Download Initiated for: Format: ${format.toUpperCase()}, Quality: ${quality}. (This is a front-end demo.)`);
+            };
 
-// Config keys
-const KEY = 'rapid_key_v1';
-const PREFS = 'yt_prefs_v1';
-
-// DOM refs
-const apiKeyEl = document.getElementById('apiKey');
-const saveKeyBtn = document.getElementById('saveKey');
-const showKeyBtn = document.getElementById('showKey');
-const clearKeyBtn = document.getElementById('clearKey');
-const videoInput = document.getElementById('videoInput');
-const fetchBtn = document.getElementById('fetchBtn');
-const statusEl = document.getElementById('status');
-
-const metaEl = document.getElementById('meta');
-const metaThumb = document.getElementById('metaThumb');
-const metaTitle = document.getElementById('metaTitle');
-const metaAuthor = document.getElementById('metaAuthor');
-const metaStats = document.getElementById('metaStats');
-
-const tabWrap = document.getElementById('tabWrap');
-const tabs = document.getElementById('tabs');
-const mp4List = document.getElementById('mp4List');
-const webmList = document.getElementById('webmList');
-const otherList = document.getElementById('otherList');
-const audioList = document.getElementById('audioList');
-const thumbGrid = document.getElementById('thumbGrid');
-
-const settingsPanel = document.getElementById('settingsPanel');
-const openSettingsBtn = document.getElementById('openSettings');
-const rawBtn = document.getElementById('rawBtn');
-const rawWrap = document.getElementById('rawWrap');
-const rawPre = document.getElementById('raw');
-
-const prefContainer = document.getElementById('prefContainer');
-const prefSort = document.getElementById('prefSort');
-const prefAudioFirst = document.getElementById('prefAudioFirst');
-const saveSettingsBtn = document.getElementById('saveSettings');
-const showRawToggle = document.getElementById('showRawToggle');
-
-const extractBtn = document.getElementById('extractBtn');
-const extractStatus = document.getElementById('extractStatus');
-
-const API_HOST = "youtube-media-downloader.p.rapidapi.com";
-const API_URL = "https://" + API_HOST + "/v2/video/details";
-
-// load key (masked) - we store raw key but mask input value for UX
-function maskKey(k){ if(!k) return ''; if(k.length <= 10) return k; return k.slice(0,6) + '…' + k.slice(-4); }
-if(localStorage.getItem(KEY)){
-  apiKeyEl.value = maskKey(localStorage.getItem(KEY));
-  apiKeyEl.dataset.masked = 'true';
-}
-
-// save key prompt
-saveKeyBtn.addEventListener('click', ()=>{
-  const paste = prompt('Paste RapidAPI key (it will be stored locally in this browser).');
-  if(!paste) return;
-  localStorage.setItem(KEY, paste.trim());
-  apiKeyEl.value = maskKey(paste.trim());
-  apiKeyEl.dataset.masked = 'true';
-  status('API key saved locally.');
-});
-
-// show/hide full key
-showKeyBtn.addEventListener('click', ()=>{
-  const raw = localStorage.getItem(KEY);
-  if(!raw) { alert('No key found — please Save first'); return; }
-  if(apiKeyEl.dataset.masked === 'true'){
-    apiKeyEl.value = raw; apiKeyEl.dataset.masked = 'false'; showKeyBtn.textContent = 'Hide';
-  } else {
-    apiKeyEl.value = maskKey(raw); apiKeyEl.dataset.masked = 'true'; showKeyBtn.textContent = 'Show';
-  }
-});
-
-// clear key
-clearKeyBtn.addEventListener('click', ()=>{
-  if(!confirm('Clear saved API key?')) return;
-  localStorage.removeItem(KEY);
-  apiKeyEl.value = '';
-  apiKeyEl.dataset.masked = '';
-  status('API key cleared.');
-});
-
-// open settings panel
-openSettingsBtn.addEventListener('click', ()=> {
-  settingsPanel.style.display = (settingsPanel.style.display === 'none' || settingsPanel.style.display === '') ? 'block' : 'none';
-  // load prefs
-  loadPrefs();
-});
-
-// raw toggle
-rawBtn.addEventListener('click', ()=>{
-  rawWrap.style.display = (rawWrap.style.display === 'none' || rawWrap.style.display === '') ? 'block' : 'none';
-  rawBtn.textContent = rawWrap.style.display === 'block' ? 'Hide raw JSON' : 'Show raw JSON';
-});
-
-// save settings and hide
-saveSettingsBtn.addEventListener('click', ()=>{
-  const prefs = {
-    container: prefContainer.value,
-    sort: prefSort.value,
-    audioFirst: prefAudioFirst.checked
-  };
-  localStorage.setItem(PREFS, JSON.stringify(prefs));
-  settingsPanel.style.display = 'none';
-  status('Settings saved.');
-});
-
-// show/hide raw from settings
-showRawToggle.addEventListener('click', ()=>{ rawWrap.style.display = rawWrap.style.display === 'block' ? 'none' : 'block'; });
-
-// load prefs
-function loadPrefs(){
-  const p = JSON.parse(localStorage.getItem(PREFS) || '{}');
-  if(p.container) prefContainer.value = p.container;
-  if(p.sort) prefSort.value = p.sort;
-  prefAudioFirst.checked = !!p.audioFirst;
-}
-
-// tab switching
-tabs.addEventListener('click', (e)=>{
-  const t = e.target.closest('.tab'); if(!t) return;
-  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-  t.classList.add('active');
-  switchTab(t.dataset.tab);
-});
-function switchTab(name){
-  document.getElementById('videoTab').style.display = (name==='video') ? 'block' : 'none';
-  document.getElementById('audioTab').style.display = (name==='audio') ? 'block' : 'none';
-  document.getElementById('thumbsTab').style.display = (name==='thumbs') ? 'block' : 'none';
-  if(name === 'settings'){ settingsPanel.style.display = 'block'; }
-}
-
-// small helpers
-function status(msg){ statusEl.textContent = msg || ''; }
-function safeAttr(s){ return String(s||'').replace(/"/g,'&quot;').replace(/`/g,'\\`'); }
-function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function humanSize(bytes){
-  if(!bytes) return '';
-  const n = Number(bytes);
-  if(isNaN(n)) return String(bytes);
-  if(n < 1024) return n + ' B';
-  const units = ['KB','MB','GB','TB'];
-  let i=-1,val=n;
-  do{ val = val/1024; i++; } while(val>=1024 && i<units.length-1);
-  return val.toFixed(2) + ' ' + units[i];
-}
-function parseRes(item){
-  if(item.height) return Number(item.height);
-  const q = (item.quality_label || item.quality || '').toString();
-  const m = q.match(/(\d{2,4})p/);
-  if(m) return Number(m[1]);
-  // fallback: check width
-  if(item.width) return Number(item.width);
-  return 0;
-}
-function sortFormats(list){
-  const prefs = JSON.parse(localStorage.getItem(PREFS) || '{}');
-  const dir = (prefs && prefs.sort === 'desc') ? -1 : 1;
-  return list.sort((a,b)=>{
-    const ra = parseRes(a), rb = parseRes(b);
-    if(ra !== rb) return (ra - rb) * dir;
-    const sa = Number(a.size || a.filesize || a.data_size || 0);
-    const sb = Number(b.size || b.filesize || b.data_size || 0);
-    return (sa - sb) * dir;
-  });
-}
-
-// extract video id
-function extractID(x){
-  if(!x) return null;
-  if(/^[A-Za-z0-9_-]{8,}$/.test(x) && !x.includes('/')) return x;
-  try{
-    const u = new URL(x);
-    if(u.hostname.includes('youtu.be')) return u.pathname.slice(1);
-    if(u.hostname.includes('youtube.com')){
-      const v = u.searchParams.get('v');
-      if(v) return v;
-      const p = u.pathname.split('/');
-      const i = p.indexOf('embed');
-      if(i>=0 && p[i+1]) return p[i+1];
-    }
-  }catch(e){}
-  return null;
-}
-
-/* -----------------------
-   Fetch & Render pipeline
-   ----------------------- */
-fetchBtn.addEventListener('click', async ()=>{
-  mp4List.innerHTML = webmList.innerHTML = otherList.innerHTML = audioList.innerHTML = thumbGrid.innerHTML = '';
-  rawPre.textContent = ''; rawWrap.style.display = 'none'; rawBtn.textContent = 'Show raw JSON';
-  metaEl.style.display = 'none'; tabWrap.style.display = 'none';
-  status('');
-  const url = videoInput.value.trim();
-  if(!url) return alert('Paste a YouTube URL or ID');
-  const key = localStorage.getItem(KEY) || null;
-  if(!key) return alert('No API key saved. Click Save and paste your RapidAPI key first.');
-  const vid = extractID(url);
-  if(!vid) return alert('Invalid YouTube URL/ID');
-
-  try{
-    status('Fetching metadata...');
-    const qs = new URLSearchParams({ videoId: vid, urlAccess:'normal', videos:'auto', audios:'auto' });
-    const res = await fetch(API_URL + '?' + qs.toString(), { method:'GET', headers:{ 'x-rapidapi-host': API_HOST, 'x-rapidapi-key': key }});
-    const txt = await res.text();
-    let data;
-    try{ data = JSON.parse(txt); } catch(e) { data = txt; }
-    rawPre.textContent = (typeof data === 'string') ? data : JSON.stringify(data,null,2);
-    rawWrap.style.display = 'none'; rawBtn.textContent = 'Show raw JSON';
-
-    if(!data || typeof data !== 'object'){ status('Bad response from API'); return; }
-    if(data.errorId && data.errorId !== 'Success'){ status('API: ' + (data.reason || data.errorId)); rawWrap.style.display = 'block'; return; }
-
-    // show meta
-    const title = data.title || data.name || 'Untitled';
-    const author = (data.channel && data.channel.name) || data.author || '';
-    const thumb = (data.thumbnails && data.thumbnails.length) ? data.thumbnails[data.thumbnails.length-1].url : (data.thumbnail || '');
-    const dur = data.lengthSeconds || data.duration || data.durationSeconds || '-';
-    const views = data.viewCount || data.viewCountText || '';
-    metaThumb.src = thumb || '';
-    metaTitle.textContent = title;
-    metaAuthor.textContent = author;
-    metaStats.textContent = `Duration: ${dur} sec ${views ? ' • ' + views : ''}`;
-    metaEl.style.display = 'flex';
-    tabWrap.style.display = 'block';
-
-    // collect formats
-    let videoItems = [];
-    let audioItems = [];
-    let thumbs = [];
-
-    if(data.videos && Array.isArray(data.videos.items)){
-      data.videos.items.forEach(it => {
-        // ensure url existence for pick
-        if(it.url) videoItems.push(it);
-        // if item looks audio-only -> push to audioItems
-        if(it.extension && /(m4a|mp3|aac|webm)/i.test(it.extension) && (!it.hasAudio || /audio/i.test(it.mimeType||''))) audioItems.push(it);
-        // items may include both audio/video
-        if(it.hasAudio) audioItems.push(it);
-      });
-    }
-
-    // fallback arrays
-    ['medias','formats','streams','results','downloads','videoStreams','audioStreams','items'].forEach(k=>{
-      if(Array.isArray(data[k])){
-        data[k].forEach(it=>{
-          const url = it.url || it.downloadUrl || it.streamUrl || it.mediaUrl || it.source || it.link;
-          if(!url) return;
-          // classify audio-only vs video
-          const mime = (it.mimeType || '') + (it.extension || '');
-          if(/audio/i.test(mime) || /(m4a|mp3|aac)/i.test(mime)) { audioItems.push(it); }
-          else { videoItems.push(it); if(it.hasAudio) audioItems.push(it); }
+            // ইনিশিয়াল লোড: ডিফল্ট ইউআরএল খালি রাখা
+            youtubeUrlInput.value = "";
+            
         });
-      }
-    });
-
-    // thumbnails
-    if(Array.isArray(data.thumbnails)){ data.thumbnails.forEach(t=> t && t.url && thumbs.push(t)); }
-    else if(data.thumbnails && Array.isArray(data.thumbnails)) thumbs = data.thumbnails;
-    else if(data.thumbnail) thumbs.push({url:data.thumbnail});
-
-    // dedupe by url
-    function dedupe(arr){
-      const m = new Map();
-      arr.forEach(it => {
-        const u = it.url || it.downloadUrl || it.streamUrl || it.mediaUrl || it.source || it.link;
-        if(u && !m.has(u)) m.set(u, it);
-      });
-      return Array.from(m.values());
-    }
-    videoItems = dedupe(videoItems);
-    audioItems = dedupe(audioItems);
-
-    // separate mp4/webm/other
-    const mp4s = videoItems.filter(it => (it.extension||it.mimeType||'').toLowerCase().includes('mp4'));
-    const webms = videoItems.filter(it => (it.extension||it.mimeType||'').toLowerCase().includes('webm'));
-    const others = videoItems.filter(it => !mp4s.includes(it) && !webms.includes(it));
-
-    // sort
-    const mp4sSorted = sortFormats(mp4s);
-    const webmsSorted = sortFormats(webms);
-    const othersSorted = sortFormats(others);
-    const audsSorted = sortFormats(audioItems);
-
-    // render
-    renderFormatsList(mp4List, mp4sSorted);
-    renderFormatsList(webmList, webmsSorted);
-    renderFormatsList(otherList, othersSorted);
-    renderFormatsList(audioList, audsSorted);
-
-    // thumbs
-    thumbGrid.innerHTML = '';
-    thumbs.forEach(t=>{
-      const card = document.createElement('div'); card.className = 'thumb-card';
-      card.innerHTML = `<img src="${safeAttr(t.url)}" alt="thumb"><div style="margin-top:6px" class="muted">${t.width ? t.width+'x'+t.height : ''}</div>
-        <div style="margin-top:6px"><a class="link" href="${safeAttr(t.url)}" target="_blank" rel="noreferrer">Open</a>
-        <a class="link" href="${safeAttr(t.url)}" download target="_blank" rel="noreferrer" style="margin-left:6px">Download</a></div>`;
-      thumbGrid.appendChild(card);
-    });
-
-    status('Formats loaded.');
-    rawWrap.style.display = 'none';
-  } catch(err){
-    console.error(err);
-    status('Fetch failed: ' + err.message);
-    rawWrap.style.display = 'block';
-    rawBtn.textContent = 'Hide raw JSON';
-  }
-});
-
-/* render one list of formats */
-function renderFormatsList(container, list){
-  container.innerHTML = '';
-  if(!list || !list.length){
-    container.innerHTML = '<div class="muted">No formats found</div>';
-    return;
-  }
-  list.forEach(it => {
-    const url = it.url || it.downloadUrl || it.streamUrl || it.mediaUrl || it.source || it.link;
-    const quality = it.quality || it.quality_label || it.format || (it.width && it.height ? (it.width+'x'+it.height) : 'unknown');
-    const ext = it.extension || (it.mimeType ? it.mimeType.split(';')[0].split('/').pop() : '');
-    const size = it.sizeText || it.size || it.filesize || it.data_size || '';
-    const hasAudio = (typeof it.hasAudio !== 'undefined') ? it.hasAudio : (/audio/i.test(ext) || /audio/i.test(it.mimeType||''));
-    const el = document.createElement('div'); el.className = 'format';
-    el.innerHTML = `<div class="left">
-        <div class="quality">${escapeHtml(String(quality || 'format'))} ${ext?('<span class="badge"> '+escapeHtml(ext)+' </span>') : ''}</div>
-        <div class="meta">${hasAudio ? 'Includes audio' : 'Video-only'} ${size ? ' • '+humanSize(size) : ''}</div>
-      </div>
-      <div class="actions">
-        ${url ? `<a class="link" href="${safeAttr(url)}" target="_blank" rel="noreferrer">Open</a>
-                 <a class="link" href="${safeAttr(url)}" download target="_blank" rel="noreferrer" style="margin-left:6px">Download</a>
-                 <button class="copy-btn" data-url="${safeAttr(url)}" style="margin-left:6px">Copy</button>`
-              : `<span class="muted">No URL</span>`}
-      </div>`;
-    container.appendChild(el);
-  });
-  // attach copy handlers
-  container.querySelectorAll('.copy-btn').forEach(btn=>{
-    btn.addEventListener('click', (e)=>{
-      e.preventDefault();
-      const u = btn.getAttribute('data-url');
-      navigator.clipboard && navigator.clipboard.writeText(u);
-      alert('Link copied');
-    });
-  });
-}
-
-/* -------------------------
-   Client-side audio extract
-   (experimental — CORS & autoplay limits)
-   ------------------------- */
-extractBtn.addEventListener('click', async ()=>{
-  extractStatus.textContent = '';
-  // pick the first playable URL that has audio (prefer combined stream)
-  const candidates = [];
-  // try mp4 then webm then audio list
-  document.querySelectorAll('#mp4List .format, #webmList .format, #otherList .format').forEach(node=>{
-    const copy = node.querySelector('.copy-btn');
-    const url = copy ? copy.getAttribute('data-url') : null;
-    if(url) candidates.push(url);
-  });
-  // also audio list
-  document.querySelectorAll('#audioList .format .copy-btn').forEach(btn=>{
-    const u = btn.getAttribute('data-url');
-    if(u && !candidates.includes(u)) candidates.push(u);
-  });
-
-  if(!candidates.length){ alert('No candidate streams to extract from'); return; }
-
-  // Try each candidate until extract succeeds
-  extractStatus.textContent = 'Trying to extract...';
-  for(const url of candidates){
-    try{
-      extractStatus.textContent = 'Attempting: ' + (url.length>40 ? url.slice(0,40)+'...' : url);
-      const blob = await extractAudioInBrowser(url);
-      if(blob){
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = 'extracted-audio.webm';
-        a.click();
-        extractStatus.textContent = 'Extraction complete — downloaded';
-        return;
-      }
-    } catch(err){
-      console.warn('extract failed for', url, err);
-      continue;
-    }
-  }
-  extractStatus.textContent = 'Extraction failed for all candidates (likely CORS/autoplay). Use server-side extractor.';
-});
-
-/* MediaRecorder-based extractor */
-function extractAudioInBrowser(mediaUrl){
-  return new Promise(async (resolve, reject)=>{
-    try{
-      // create video element
-      const v = document.createElement('video');
-      v.crossOrigin = 'anonymous';
-      v.src = mediaUrl;
-      v.muted = true;
-      v.playsInline = true;
-      v.style.display = 'none';
-      document.body.appendChild(v);
-
-      // need user gesture in many mobiles — prompt user
-      try{
-        await v.play();
-      } catch(e){
-        // playback failed: prompt user to click to start
-        const ok = confirm('Browser blocked autoplay/playing. Press OK then allow playback to start extraction.');
-        if(!ok){ document.body.removeChild(v); return reject(new Error('Playback required')); }
-        await v.play().catch(err => { document.body.removeChild(v); throw err; });
-      }
-
-      // captureStream
-      const stream = v.captureStream ? v.captureStream() : (v.mozCaptureStream ? v.mozCaptureStream() : null);
-      if(!stream){ document.body.removeChild(v); return reject(new Error('captureStream not supported')); }
-      const audioTracks = stream.getAudioTracks();
-      if(!audioTracks || !audioTracks.length){ document.body.removeChild(v); return reject(new Error('No audio track')); }
-
-      const audioStream = new MediaStream(audioTracks);
-      const options = { mimeType: 'audio/webm' };
-      let recorder;
-      try{ recorder = new MediaRecorder(audioStream, options); } catch(e){
-        try{ recorder = new MediaRecorder(audioStream); } catch(ex){ document.body.removeChild(v); return reject(new Error('MediaRecorder not supported')); }
-      }
-      const chunks = [];
-      recorder.ondataavailable = e=> { if(e.data && e.data.size) chunks.push(e.data); };
-      recorder.onstop = () => {
-        const blob = new Blob(chunks, { type: 'audio/webm' });
-        try{ v.pause(); } catch(e){}
-        document.body.removeChild(v);
-        resolve(blob);
-      };
-      recorder.start();
-      // stop after video ends or after 30s (fallback)
-      v.onended = ()=> { try{ recorder.stop(); } catch(e){} };
-      // safety: stop after video duration if known
-      const duration = v.duration && isFinite(v.duration) ? v.duration*1000 : 30000;
-      setTimeout(()=> { if(recorder && recorder.state === 'recording') try{ recorder.stop(); } catch(e){} }, Math.min(duration+1000, 120000));
-    } catch(err){
-      reject(err);
-    }
-  });
-}
-
-/* Startup: load prefs */
-loadPrefs();
-switchTab('video');
-
-</script>
+        /* জাভাস্ক্রিপ্ট লজিক শেষ */
+    </script>
 </body>
 </html>
+```
