@@ -3,13 +3,20 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>YouTube Downloader — Full RapidAPI Debug Version</title>
+<title>YouTube Downloader — RapidAPI (Final Version)</title>
 
 <style>
   :root{--bg:#071428;--card:#071a2b;--accent:#06b6d4;--muted:#9fb6c8}
-  body{margin:0;font-family:system-ui,Segoe UI,Roboto;background:linear-gradient(180deg,#041025,#071429);color:#e8f7fb;padding:14px}
+  body{
+    margin:0;font-family:system-ui,Segoe UI,Roboto;
+    background:linear-gradient(180deg,#041025,#071429);
+    color:#e8f7fb;padding:14px
+  }
   .wrap{max-width:920px;margin:0 auto}
-  .card{background:var(--card);padding:14px;border-radius:14px;box-shadow:0 8px 30px rgba(2,6,23,0.6)}
+  .card{
+    background:var(--card);padding:14px;border-radius:14px;
+    box-shadow:0 8px 30px rgba(2,6,23,0.6)
+  }
   h1{margin:0 0 6px;font-size:20px}
   p.lead{margin:0;color:var(--muted);font-size:13px}
   label{display:block;margin-top:12px;color:var(--muted);font-size:13px}
@@ -19,25 +26,35 @@
     background:transparent;color:inherit;
   }
   .row{display:flex;gap:8px;margin-top:8px}
-  .btn{background:var(--accent);color:#022;padding:10px 12px;border-radius:8px;border:0;cursor:pointer;font-weight:700}
-  .btn.sec{background:transparent;border:1px solid rgba(255,255,255,0.07);color:var(--muted)}
+  .btn{
+    background:var(--accent);color:#022;padding:10px 12px;border-radius:8px;
+    border:0;cursor:pointer;font-weight:700
+  }
+  .btn.sec{
+    background:transparent;border:1px solid rgba(255,255,255,0.07);
+    color:var(--muted)
+  }
   .notice{font-size:13px;color:var(--muted);margin-top:10px}
   .result{margin-top:16px;display:grid;gap:12px}
+
   .media{
     display:flex;justify-content:space-between;align-items:center;
     padding:12px;border-radius:10px;background:rgba(255,255,255,0.04)
   }
   .media .left{max-width:70%}
+
   a.link{
-    padding:8px 10px;border-radius:7px;
-    background:rgba(6,182,212,0.18);color:#cfefff;
-    text-decoration:none;font-weight:600
+    padding:8px 10px;border-radius:7px;background:rgba(6,182,212,0.18);
+    color:#cfefff;text-decoration:none;font-weight:600
   }
+
   img.thumb{max-width:160px;border-radius:8px}
+
   pre.raw{
     white-space:pre-wrap;background:#02121a;color:#9fe;
     padding:12px;border-radius:10px;margin-top:12px
   }
+
   @media(max-width:600px){
     .row{flex-direction:column}
     .media{flex-direction:column;align-items:flex-start}
@@ -50,61 +67,57 @@
 <div class="wrap">
   <div class="card">
     <h1>YouTube Downloader (RapidAPI)</h1>
-    <p class="lead">Paste API key → YouTube URL → Fetch → Debug + Download links appear.</p>
+    <p class="lead">Paste API key → YouTube URL → Fetch → Download links appear.</p>
 
     <label>RapidAPI Key</label>
     <div class="row">
-      <input id="apiKey" type="text" placeholder="Paste your RapidAPI key here" />
+      <input id="apiKey" type="text" placeholder="Paste your RapidAPI key" />
       <button id="saveKey" class="btn sec">Save</button>
     </div>
 
-    <label>YouTube URL or Video ID</label>
+    <label>YouTube URL / Video ID</label>
     <div class="row">
-      <input id="videoInput" type="url" placeholder="https://www.youtube.com/watch?v=..." />
+      <input id="videoInput" type="url" placeholder="https://youtu.be/ID or full link" />
       <button id="fetchBtn" class="btn">Fetch</button>
     </div>
 
     <div id="status" class="notice"></div>
     <div id="info" class="result"></div>
 
-    <div class="notice">
-      ⚠ API key কখনো public-এ শেয়ার করবেন না — শুধুমাত্র শিখার উদ্দেশ্যে ব্যবহার করুন।
-    </div>
+    <div class="notice">⚠ API key public-এ শেয়ার করবেন না।</div>
   </div>
 </div>
-
 
 <script>
 const API_HOST = "youtube-media-downloader.p.rapidapi.com";
 const API_URL  = "https://" + API_HOST + "/v2/video/details";
 
-// UI elements
-const apiKeyEl   = document.getElementById("apiKey");
+const apiKeyEl = document.getElementById("apiKey");
 const videoInput = document.getElementById("videoInput");
 const saveKeyBtn = document.getElementById("saveKey");
-const fetchBtn   = document.getElementById("fetchBtn");
-const statusEl   = document.getElementById("status");
-const infoEl     = document.getElementById("info");
+const fetchBtn = document.getElementById("fetchBtn");
+const statusEl = document.getElementById("status");
+const infoEl = document.getElementById("info");
 
-// Load key from localStorage
+// load saved key
 if(localStorage.getItem("rapid_key"))
-    apiKeyEl.value = localStorage.getItem("rapid_key");
+  apiKeyEl.value = localStorage.getItem("rapid_key");
 
-// Save key
+// save key
 saveKeyBtn.addEventListener("click", ()=>{
-  const k = apiKeyEl.value.trim();
-  if(!k) return alert("Paste your API key");
+  let k = apiKeyEl.value.trim();
+  if(!k) return alert("Paste your API key first");
   localStorage.setItem("rapid_key", k);
-  status("API key saved.");
+  status("API key saved");
 });
 
-// Fetch Click
+// fetch events
 fetchBtn.addEventListener("click", ()=> {
   const url = videoInput.value.trim();
-  if(!url) return alert("Paste a YouTube URL or ID");
+  if(!url) return alert("Paste URL or ID");
 
   const key = localStorage.getItem("rapid_key") || apiKeyEl.value.trim();
-  if(!key) return alert("API key missing!");
+  if(!key) return alert("API key missing");
 
   const vid = extractID(url);
   if(!vid) return alert("Invalid YouTube URL / ID");
@@ -115,7 +128,7 @@ fetchBtn.addEventListener("click", ()=> {
 function status(msg){ statusEl.textContent = msg; }
 function clear(){ infoEl.innerHTML = ""; status(""); }
 
-// Extract YouTube ID
+// Extract video ID
 function extractID(x){
   if(/^[A-Za-z0-9_-]{8,}$/.test(x) && !x.includes("/")) return x;
   try{
@@ -128,14 +141,14 @@ function extractID(x){
       const i = p.indexOf("embed");
       if(i>=0 && p[i+1]) return p[i+1];
     }
-  }catch(e){}
+  }catch(err){}
   return null;
 }
 
-// Fetch API with debug
+// MAIN FETCH + DEBUG DISPLAY
 async function fetchVideo(videoId, key){
   clear();
-  status("Fetching…");
+  status("Fetching...");
 
   const q = new URLSearchParams({
     videoId: videoId,
@@ -153,50 +166,51 @@ async function fetchVideo(videoId, key){
       }
     });
 
-    const rawText = await r.text();
-
+    const raw = await r.text();
     let data;
-    try { data = JSON.parse(rawText); }
-    catch { data = rawText; }
+    try{ data = JSON.parse(raw); }
+    catch{ data = raw; }
 
     console.log("RAW API RESPONSE:", data);
 
-    // Show raw debug box
+    // show raw JSON on page
     const pre = document.createElement("pre");
     pre.className = "raw";
-    pre.textContent = typeof data === "string" ? data : JSON.stringify(data, null, 2);
+    pre.textContent = typeof data === "string"
+        ? data
+        : JSON.stringify(data, null, 2);
     infoEl.appendChild(pre);
 
-    // Friendly UI
-    const holder = document.createElement("div");
-    holder.style.marginTop = "14px";
-    infoEl.appendChild(holder);
+    // Friendly renderer
+    const box = document.createElement("div");
+    box.style.marginTop = "10px";
+    infoEl.appendChild(box);
 
-    display(data, holder);
+    renderFinal(data, box);
     status("Done.");
 
-  } catch(e){
-    status("Error: "+e.message);
+  }catch(e){
+    status("Error: " + e.message);
     infoEl.innerHTML = "<div style='color:#f88'>Fetch failed: "+e.message+"</div>";
   }
 }
 
-// Main renderer
-function display(data, container){
-  if(!data || typeof data !== "object"){
-    container.innerHTML = `<div style="color:#faa">Invalid response.</div>`;
+// FRIENDLY RENDERER (FINAL)
+function renderFinal(data, container){
+  if(!data || typeof data !== 'object'){
+    container.innerHTML = '<div style="color:#faa">Invalid response</div>';
     return;
   }
 
-  // Header (title + thumbnail)
-  const title = data.title || data.name || "Unknown title";
-  const thumb = data.thumbnail || "";
-  const author = data.author || data.uploader || "";
-  const dur = data.duration || "-";
+  // Header
+  const title = data.title || "Unknown title";
+  const thumb = (data.thumbnails && data.thumbnails[0] && data.thumbnails[0].url) || data.thumbnail || "";
+  const author = (data.channel && data.channel.name) || data.author || "";
+  const dur = data.lengthSeconds || data.duration || "-";
 
   const head = document.createElement("div");
-  head.style.display = "flex";
-  head.style.gap = "12px";
+  head.style.display = 'flex';
+  head.style.gap = '12px';
 
   if(thumb){
     const img = document.createElement("img");
@@ -207,82 +221,77 @@ function display(data, container){
 
   const meta = document.createElement("div");
   meta.innerHTML = `
-    <div style="font-weight:700">${escape(title)}</div>
-    <div style="color:#9fb6c8;font-size:13px">${escape(author)}</div>
-    <div style="color:#9fb6c8;font-size:12px;margin-top:6px">Duration: ${dur} sec</div>`;
+     <div style="font-weight:700">${escapeHtml(title)}</div>
+     <div style="color:#9fb6c8;font-size:13px">${escapeHtml(author)}</div>
+     <div style="color:#9fb6c8;font-size:12px;margin-top:6px">Duration: ${dur} sec</div>`;
   head.appendChild(meta);
-
   container.appendChild(head);
 
-  // Possible array fields
-  const possible = [
-    "medias","formats","streams","results",
-    "downloads","videoStreams","audioStreams"
-  ];
-
-  const arrays = possible
-    .map(k => ({ key:k, list:data[k] }))
-    .filter(x => Array.isArray(x.list) && x.list.length);
-
-  // direct single URL fields
-  const direct =
-    data.url || data.videoUrl || data.downloadUrl || data.source || null;
-
-  if(direct){
-    container.innerHTML += `
-      <div class="media" style="margin-top:12px">
-        <div class="left"><b>Direct Link</b></div>
-        <a class="link" target="_blank" href="${escapeAttr(direct)}">Download</a>
-      </div>`;
+  // expiration (if any)
+  if(data.videos && data.videos.expiration){
+    const t = new Date(data.videos.expiration * 1000);
+    const ex = document.createElement("div");
+    ex.style.color = "#9fb6c8";
+    ex.style.marginTop = "8px";
+    ex.textContent = "Links expire: " + t;
+    container.appendChild(ex);
   }
 
-  if(arrays.length === 0 && !direct){
-    container.innerHTML += `
-      <div style="color:#faa;margin-top:12px">
-        No downloadable media found.<br>
-        See RAW JSON above — look for: url, downloadUrl, streamUrl, source.
-      </div>`;
+  // Collect media lists
+  const lists = [];
+  if(data.videos && Array.isArray(data.videos.items))
+    lists.push({ key:"videos.items", list:data.videos.items });
+
+  ["medias","formats","streams","downloads","results","videoStreams","audioStreams"]
+    .forEach(k => {
+      if(Array.isArray(data[k]) && data[k].length)
+        lists.push({key:k, list:data[k]});
+    });
+
+  // Render lists
+  if(lists.length === 0){
+    container.innerHTML += `<div style="color:#faa;margin-top:10px">
+       No downloadable media found.
+    </div>`;
     return;
   }
 
-  // Render each array
-  arrays.forEach(({key, list})=>{
+  lists.forEach(block=>{
     const h = document.createElement("div");
-    h.style.marginTop = "14px";
+    h.style.marginTop = "12px";
     h.style.fontWeight = "700";
-    h.textContent = `Found list: ${key} (${list.length})`;
+    h.textContent = `${block.key} (${block.list.length})`;
     container.appendChild(h);
 
-    list.forEach(item=>{
-      const url =
-        item.url || item.downloadUrl || item.streamUrl ||
-        item.source || item.mediaUrl || item.link;
+    block.list.forEach((it, idx)=>{
+      const url = it.url || it.downloadUrl || it.streamUrl || it.mediaUrl || it.source;
 
-      const q = item.quality || item.format_note ||
-                item.quality_label || item.format || "unknown";
+      const q = it.quality || it.quality_label || it.format ||
+                (it.width && it.height ? `${it.width}x${it.height}` : "Unknown");
 
-      const ext = item.ext || item.extension || "";
-      const size = item.filesize || item.data_size || item.size || null;
+      const mime = it.mimeType || it.extension || "";
+      const size = it.sizeText || it.size || "";
 
-      const div = document.createElement("div");
-      div.className = "media";
-      div.innerHTML = `
+      const row = document.createElement("div");
+      row.className = "media";
+      row.innerHTML = `
         <div class="left">
-          <div style="font-weight:700">${escape(q)} ${ext?("• "+escape(ext)):""}</div>
-          <div style="color:#9fb6c8;font-size:13px">
-            ${size ? (Math.round(size/1024/1024)+" MB") : ""}
-          </div>
+          <div style="font-weight:700">${escapeHtml(q)} ${mime?'• '+escapeHtml(mime):''}</div>
+          <div style="color:#9fb6c8;font-size:13px">${escapeHtml(String(size))}</div>
         </div>
-        ${url ? `<a class="link" target="_blank" href="${escapeAttr(url)}">Download</a>`
-              : `<span style="color:#777">No URL</span>`}
+        ${
+          url
+          ? `<a class="link" target="_blank" href="${escapeAttr(url)}">Open</a>`
+          : `<span style="color:#777">No URL</span>`
+        }
       `;
-      container.appendChild(div);
+      container.appendChild(row);
     });
   });
 }
 
-function escape(s){ return String(s||'').replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
-function escapeAttr(s){ return String(s||'').replace(/"/g,"&quot;"); }
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c])); }
+function escapeAttr(s){ return String(s||'').replace(/"/g,'&quot;').replace(/`/g,'\\`'); }
 </script>
 
 </body>
