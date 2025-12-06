@@ -9,9 +9,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
     <style>
-        /* (Your CSS unchanged - omitted here for brevity in this comment) */
-        /* ... copy original CSS from your file exactly ... */
-        /* For space reasons in this message I'll include the same CSS as you provided earlier */
         * {
             margin: 0;
             padding: 0;
@@ -50,9 +47,10 @@
             color: var(--text-dark);
             display: flex;
             justify-content: center;
-            align-items: flex-start;
-            min-height: 100vh;
-            padding: 20px 0;
+            /* **মোবাইল ফিট: কন্টেইনারকে মাঝখানে রাখার জন্য** */
+            align-items: center; 
+            min-height: 100vh; /* **মোবাইল ফিট: পুরো উচ্চতা ব্যবহার** */
+            padding: 0; /* **মোবাইল ফিট: উপরে নিচে প্যাডিং অপসারণ** */
             transition: background-color 0.3s;
         }
 
@@ -64,6 +62,10 @@
             padding: 20px;
             position: relative;
             z-index: 10;
+            /* **মোবাইল ফিট: কন্টেইনার যেন পুরো উচ্চতা ব্যবহার করে** */
+            min-height: 100vh; 
+            display: flex;
+            flex-direction: column;
         }
 
         .header {
@@ -249,11 +251,24 @@
             width: 100%;
         }
         
+        .download-options-container h3 {
+            font-size: 16px;
+            color: var(--primary-blue);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .download-options-container h3 i {
+            font-size: 18px;
+        }
+
         .download-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 10px 0;
+            /* **ডাউনলোড বাটনের নিচে সাদা দাগ (বর্ডার) অপসারণের জন্য JS লজিক ব্যবহার হবে** */
             border-bottom: 1px solid var(--card-border-grey);
         }
 
@@ -261,11 +276,13 @@
             background-color: var(--primary-blue);
             color: #ffffff;
             padding: 8px 15px;
-            border: 1px solid var(--primary-blue);
+            /* **ডাউনলোড বাটনের নিচের সাদা দাগ অপসারণ** */
+            border: none; 
             border-radius: 6px;
             cursor: pointer;
             font-size: 14px;
             transition: all 0.2s;
+            /* **আইকন ও লেখা পাশাপাশি দেখানোর জন্য** */
             display: flex;
             align-items: center;
             gap: 5px;
@@ -375,7 +392,9 @@
 
         .footer {
             text-align: center;
-            margin-top: 30px;
+            /* **মোবাইল ফিট: ফুটারকে নিচে রাখার জন্য** */
+            margin-top: auto; 
+            padding-top: 20px;
         }
         
     </style>
@@ -471,7 +490,6 @@
     </div>
 
     <script>
-        /* Enhanced JS: add API fetch + render logic */
         document.addEventListener('DOMContentLoaded', () => {
             const generateBtn = document.getElementById('generate-btn');
             const formatBtns = document.querySelectorAll('.format-btn');
@@ -496,6 +514,25 @@
             const API_HOST = "youtube-media-downloader.p.rapidapi.com";
             const API_URL = "https://" + API_HOST + "/v2/video/details";
             const STORAGE_KEY = 'rapidapi_key_v2';
+
+            // --- [২. ডিউরেশন ফরমেট পরিবর্তনের জন্য নতুন ফাংশন] ---
+            function formatDuration(seconds) {
+                if(!seconds) return 'N/A';
+                seconds = parseInt(seconds, 10);
+                if(isNaN(seconds) || seconds < 0) return 'N/A';
+
+                const h = Math.floor(seconds / 3600);
+                const m = Math.floor((seconds % 3600) / 60);
+                const s = Math.floor(seconds % 60);
+
+                const pad = (num) => num.toString().padStart(2, '0');
+
+                // HH:MM:SS ফরমেট (যদি 1 ঘণ্টার বেশি হয়) অথবা MM:SS
+                if (h > 0) {
+                    return `${pad(h)}:${pad(m)}:${pad(s)}`;
+                }
+                return `${pad(m)}:${pad(s)}`;
+            }
 
             // open/close sidebar
             menuToggle.addEventListener('click', () => sidebar.classList.add('open'));
@@ -527,6 +564,7 @@
             }
             const stored = localStorage.getItem(STORAGE_KEY);
             if(stored){
+                // Note: The input type remains 'password' after load if masked
                 sidebarApiKeyInput.value = maskKey(stored);
                 sidebarApiKeyInput.dataset.masked = 'true';
             }
@@ -627,13 +665,18 @@
 
                     // render meta
                     const title = data.title || data.name || 'Untitled';
-                    const duration = data.lengthSeconds || data.duration || data.durationSeconds || '-';
-                    const views = data.viewCount || data.viewCountText || '';
+                    const durationSecs = data.lengthSeconds || data.duration || data.durationSeconds || null;
+                    // --- [৬. ভিউজের সংখ্যা ভালোভাবে দেখানো] ---
+                    const viewCount = data.viewCount || data.viewCountText || null;
+                    const viewsText = viewCount ? new Intl.NumberFormat('bn-BD').format(viewCount) + ' views' : '';
+                    
                     const thumbsArr = (data.thumbnails && data.thumbnails.length) ? data.thumbnails : (data.thumbnails || []);
                     const bestThumb = (thumbsArr.length) ? (thumbsArr[thumbsArr.length-1].url || thumbsArr[thumbsArr.length-1].thumb || '') : (data.thumbnail || '');
 
                     videoTitle.textContent = title;
-                    videoDuration.textContent = 'Duration: ' + duration + ' sec' + (views ? (' • ' + views) : '');
+                    // --- [২. ডিউরেশন ফরমেট ফাংশন ব্যবহার করে আউটপুট] ---
+                    const formattedDuration = formatDuration(durationSecs);
+                    videoDuration.textContent = `Duration: ${formattedDuration}` + (viewsText ? ` • ${viewsText}` : '');
                     videoThumbnail.src = bestThumb || '';
                     previewSection.classList.add('loaded');
                     initialPreview.style.display = 'none';
@@ -682,24 +725,31 @@
                     if(Array.isArray(data[k])) lists.push(...data[k]);
                 });
 
-                // also try top-level single url
                 const fallbackUrl = data.url || data.videoUrl || data.downloadUrl || data.source || data.downloadURL || null;
 
-                // dedupe by url
-                const map = new Map();
+                // --- [৫. ডুপ্লিকেট ফরম্যাট অপসারণের জন্য পরিবর্তন] ---
+                // ডুপ্লিকেট এন্ট্রি অপসারণের জন্য একটি সেট ব্যবহার করা হলো (URL + Quality এর উপর ভিত্তি করে)
+                const uniqueStreams = new Map();
                 lists.forEach(it=>{
                     const u = it.url || it.downloadUrl || it.streamUrl || it.mediaUrl || it.source || it.link;
-                    if(u && !map.has(u)) map.set(u, it);
+                    const q = it.quality || it.quality_label || (it.height? (it.height + 'p') : '') || (it.format || '');
+                    const key = u + '-' + q;
+                    if(u && !uniqueStreams.has(key)) uniqueStreams.set(key, it);
                 });
-                // if fallbackUrl exists and not in map, add
-                if(fallbackUrl && !map.has(fallbackUrl)) map.set(fallbackUrl, { url: fallbackUrl });
+                
+                if(fallbackUrl && !uniqueStreams.has(fallbackUrl)) uniqueStreams.set(fallbackUrl, { url: fallbackUrl });
+                const streamArr = Array.from(uniqueStreams.values());
 
-                const streamArr = Array.from(map.values());
+                // helper to determine if stream is likely video-only (for combined audio fallback)
+                function isAudioOnly(it){
+                    // This checks for common audio mime/ext or known itag (140)
+                    return (it.mimeType||'').toLowerCase().includes('audio/') || (it.extension||'').toLowerCase().includes('m4a') || (it.extension||'').toLowerCase().includes('mp3') || it.itag==140;
+                }
 
-                // categorize into mp4 / webm / audio
-                const mp4s = streamArr.filter(it => ((it.extension||it.mimeType||'').toLowerCase().includes('mp4') || (it.mimeType||'').toLowerCase().includes('video/mp4')));
-                const webms = streamArr.filter(it => ((it.extension||it.mimeType||'').toLowerCase().includes('webm') || (it.mimeType||'').toLowerCase().includes('video/webm')));
-                const audios = streamArr.filter(it => ((it.extension||it.mimeType||'').toLowerCase().includes('mp3') || (it.mimeType||'').toLowerCase().includes('audio/') || (it.extension||'').toLowerCase().includes('m4a')));
+                // --- [৫. এবং ৭. ক্রস-ফরম্যাট ফিল্টারিং ও অডিও ঠিক করা] ---
+                const mp4s = streamArr.filter(it => (it.mimeType||'').toLowerCase().includes('video/mp4') || (it.extension||'').toLowerCase().includes('mp4'));
+                const webms = streamArr.filter(it => (it.mimeType||'').toLowerCase().includes('video/webm') || (it.extension||'').toLowerCase().includes('webm'));
+                const audios = streamArr.filter(it => isAudioOnly(it)); // Audio only
                 const others = streamArr.filter(it => !mp4s.includes(it) && !webms.includes(it) && !audios.includes(it));
 
                 // helper to sort by resolution (small -> large)
@@ -710,80 +760,60 @@
                     if(m) return Number(m[1]);
                     return 0;
                 }
-                function sortAsc(list){ return list.sort((a,b)=> parseRes(a)-parseRes(b) ); }
+                function sortAsc(list){ 
+                    // Filter out items with no URL or resolution before sorting
+                    return list.filter(item => item.url).sort((a,b)=> parseRes(a)-parseRes(b) ); 
+                }
+
                 const mp4sS = sortAsc(mp4s);
                 const webmsS = sortAsc(webms);
-                const othersS = sortAsc(others);
-                const audiosS = audios; // audio sorting not necessary
+                // অডিওগুলোর রেজোলিউশন না থাকলেও, শুধু ইউআরএল আছে কিনা দেখে ফিল্টার করা
+                const audiosS = audios.filter(item => item.url); 
 
-                // depending on requested format render appropriate lists
-                const chosen = format === 'mp4' ? mp4sS : (format === 'webm' ? webmsS : (format === 'mp3' ? audiosS : []));
-                // If chosen empty and fallback exists, show fallback
+                // --- [৩. আইকন সহ হেডার যোগ করা] ---
+                let headerHtml = '';
+                if(format === 'mp4') headerHtml = '<h3><i class="fas fa-video"></i> MP4 Download Options</h3>';
+                else if(format === 'webm') headerHtml = '<h3><i class="fas fa-video"></i> WebM Download Options</h3>';
+                else if(format === 'mp3') headerHtml = '<h3><i class="fas fa-music"></i> MP3 Audio Download Options</h3>';
+                else if(format === 'thumbnail') headerHtml = '<h3><i class="fas fa-image"></i> Thumbnail Download Options</h3>';
+                
                 let html = '';
-                if((format === 'mp4' && mp4sS.length===0) && (webmsS.length>0)){
-                    // fallback show webm if mp4 absent
-                    html += '<div style="color:#b33">No MP4 streams, showing WebM as fallback</div>';
-                }
-
-                function makeRow(it){
-                    const url = it.url || it.downloadUrl || it.streamUrl || it.mediaUrl || it.source || it.link || '';
-                    const quality = it.quality || it.quality_label || (it.height? (it.height + 'p') : '') || (it.format || '');
-                    const ext = it.extension || (it.mimeType ? it.mimeType.split(';')[0].split('/').pop() : '');
-                    const size = it.sizeText || it.size || it.filesize || it.data_size || '';
-                    const hasAudio = (typeof it.hasAudio !== 'undefined') ? it.hasAudio : (/(audio|m4a|mp3)/i.test(ext) ? true : false);
-                    return `
-                        <div class="download-item">
-                            <div class="item-details">
-                                <span class="format-tag">${ext ? ext.toUpperCase() : ''}</span>
-                                <span style="margin-right:10px;font-weight:700">${quality}</span>
-                                <span class="size" style="color:${size? 'var(--text-dark)': 'var(--text-medium)'}">${size ? size : ''}</span>
-                            </div>
-                            <div style="display:flex;gap:8px;align-items:center">
-                                ${url ? `<a class="download-btn-small" href="${safe(url)}" target="_blank" rel="noreferrer">Download</a>` : '<span style="color:var(--text-medium)">No URL</span>'}
-                                ${url ? `<button class="download-btn-small" style="background:#fff;color:#333;border:1px solid #ddd" onclick="copyLink('${safe(url)}')">Copy</button>` : ''}
-                            </div>
-                        </div>
-                    `;
-                }
 
                 // If selected format is mp4 -> list mp4s
                 if(format === 'mp4'){
+                    html += headerHtml;
                     if(mp4sS.length){
-                        html += '<h3 style="margin-bottom:8px">MP4 Formats</h3>';
                         mp4sS.forEach(it=> html += makeRow(it));
                     } else {
-                        html += '<div class="small" style="color:var(--text-medium)">No MP4 formats found.</div>';
+                        html += '<div class="small" style="color:var(--text-medium);padding:10px 0;">No MP4 video formats found.</div>';
                     }
-                    // also show webm as alternative
-                    if(webmsS.length){
-                        html += '<h3 style="margin-top:12px;margin-bottom:8px">WebM (alternative)</h3>';
-                        webmsS.forEach(it=> html += makeRow(it));
-                    }
+                    // mp4 সেকশনে webm দেখানো বন্ধ করা হলো (অনুরোধ অনুযায়ী)
                 } else if(format === 'webm'){
+                    html += headerHtml;
                     if(webmsS.length){
-                        html += '<h3 style="margin-bottom:8px">WebM Formats</h3>';
                         webmsS.forEach(it=> html += makeRow(it));
                     } else {
-                        html += '<div class="small" style="color:var(--text-medium)">No WebM formats found.</div>';
+                        html += '<div class="small" style="color:var(--text-medium);padding:10px 0;">No WebM video formats found.</div>';
                     }
                 } else if(format === 'mp3'){
+                    html += headerHtml;
                     if(audiosS.length){
-                        html += '<h3 style="margin-bottom:8px">Audio Formats</h3>';
                         audiosS.forEach(it=> html += makeRow(it));
                     } else {
-                        // If no audio-only, but there are combined streams, offer them as source (users can download combined)
-                        if(streamArr.length){
-                            html += '<div class="small" style="color:var(--text-medium)">No audio-only streams. You can download a combined stream (video includes audio) below.</div>';
-                            streamArr.forEach(it=> html += makeRow(it));
+                        // যদি অডিও-অনলি স্ট্রীম না থাকে, তাহলে Combine Stream দেখানোর বিকল্প:
+                        if(mp4sS.length > 0 || webmsS.length > 0){
+                            html += '<div class="small" style="color:var(--text-medium);padding:10px 0;">No audio-only streams found. You may download a combined Video/Audio stream below.</div>';
+                            // Combine stream দেখানোর জন্য mp4s এবং webms যোগ করা হলো
+                            sortAsc([...mp4sS, ...webmsS]).forEach(it=> html += makeRow(it));
                         } else {
-                            html += '<div class="small" style="color:var(--text-medium)">No audio formats found.</div>';
+                            html += '<div class="small" style="color:var(--text-medium);padding:10px 0;">No audio formats found.</div>';
                         }
                     }
                 } else if(format === 'thumbnail'){
                     // thumbnails from data.thumbnails
+                    html += headerHtml;
                     const thumbs = (data.thumbnails && data.thumbnails.length) ? data.thumbnails : (data.thumbnail ? [{ url: data.thumbnail }] : []);
                     if(thumbs.length){
-                        html += '<h3 style="margin-bottom:8px">Thumbnails</h3>';
                         thumbs.forEach(t => {
                             const u = t.url || t.thumb || '';
                             html += `
@@ -793,8 +823,8 @@
                                   <span style="font-weight:700">${t.width? (t.width + 'x' + (t.height||'')) : 'Thumbnail'}</span>
                                 </div>
                                 <div style="display:flex;gap:8px">
-                                  <a class="download-btn-small" href="${safe(u)}" target="_blank" rel="noreferrer">Open</a>
-                                  <a class="download-btn-small" href="${safe(u)}" download target="_blank" rel="noreferrer" style="background:#fff;color:#333;border:1px solid #ddd">Download</a>
+                                  <a class="download-btn-small" href="${safe(u)}" target="_blank" rel="noreferrer"><i class="fas fa-eye"></i> Open</a>
+                                  <a class="download-btn-small" href="${safe(u)}" download target="_blank" rel="noreferrer" style="background:#fff;color:var(--text-dark);border:1px solid var(--card-border-grey)"><i class="fas fa-download"></i> Download</a>
                                 </div>
                               </div>
                             `;
@@ -805,7 +835,7 @@
                 }
 
                 // show raw JSON toggle for debug
-                html += `<div style="margin-top:12px"><button id="showRawBtn" class="download-btn-small" style="background:transparent;color:var(--text-dark);border:1px solid #ccc">Show raw JSON (console too)</button></div>`;
+                html += `<div style="margin-top:12px;text-align:center;"><button id="showRawBtn" class="download-btn-small" style="background:transparent;color:var(--text-dark);border:1px solid var(--card-border-grey)"><i class="fas fa-code"></i> Show raw JSON (console too)</button></div>`;
 
                 downloadOptionsContainer.innerHTML = html;
                 downloadOptionsContainer.style.display = 'block';
@@ -818,6 +848,12 @@
                         alert('Raw JSON logged to console. Open DevTools (Console) to inspect.');
                     });
                 }
+                
+                // --- [৪. শেষ ডাউনলোড আইটেম থেকে বর্ডার রিমুভ করা] ---
+                const items = downloadOptionsContainer.querySelectorAll('.download-item');
+                if(items.length > 0) {
+                    items[items.length - 1].style.borderBottom = 'none';
+                }
             }
 
             // helper to escape URL in attributes
@@ -825,7 +861,29 @@
                 return String(u||'').replace(/"/g,'&quot;').replace(/'/g,"'");
             }
 
-            // copy link function
+            // --- [৪. ডাউনলোড বাটন তৈরি এবং কপি বাটন অপসারণ] ---
+            function makeRow(it){
+                const url = it.url || it.downloadUrl || it.streamUrl || it.mediaUrl || it.source || it.link || '';
+                const quality = it.quality || it.quality_label || (it.height? (it.height + 'p') : '') || (it.format || '');
+                const ext = it.extension || (it.mimeType ? it.mimeType.split(';')[0].split('/').pop() : 'BIN');
+                const size = it.sizeText || it.size || it.filesize || it.data_size || '';
+                
+                return `
+                    <div class="download-item">
+                        <div class="item-details">
+                            <span class="format-tag">${ext ? ext.toUpperCase() : ''}</span>
+                            <span style="margin-right:10px;font-weight:700">${quality}</span>
+                            <span class="size" style="color:${size? 'var(--text-dark)': 'var(--text-medium)'}">${size ? size : ''}</span>
+                        </div>
+                        <div style="display:flex;gap:8px;align-items:center">
+                            ${url ? `<a class="download-btn-small" href="${safe(url)}" target="_blank" rel="noreferrer"><i class="fas fa-download"></i> Download</a>` : '<span style="color:var(--text-medium)">No URL</span>'}
+                            
+                            </div>
+                    </div>
+                `;
+            }
+
+            // copy link function (kept for safety but unused)
             window.copyLink = function(url){
                 if(!url) return;
                 navigator.clipboard && navigator.clipboard.writeText(url);
