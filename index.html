@@ -43,6 +43,7 @@
             --sidebar-hover: #34495e;
         }
 
+        /* **মোবাইল ফিট সেটিং** */
         body {
             background-color: var(--body-bg);
             color: var(--text-dark);
@@ -176,10 +177,9 @@
             padding: 15px 0;
         }
         
-        /* **ভিডিও তথ্য বিন্যাস (টাইটেল, ডিউরেশন/ভিউজ সেটিং)** */
+        /* **ভিডিও তথ্য বিন্যাস (টাইটেল উপরে, ডিউরেশন/ভিউজ নিচে)** */
         .video-info {
-            /* flex: রিমুভ করা হলো যাতে h3 এবং div#video-duration উপরে নিচে আসে */
-            margin-bottom: 10px; /* স্ট্যাটাস থেকে টাইটেলের দূরত্ব */
+            margin-bottom: 10px; 
         }
 
         .video-info h3 {
@@ -187,15 +187,14 @@
             font-weight: 900;
             color: var(--primary-blue);
             margin: 0; 
-            margin-bottom: 10px; /* টাইটেল এবং স্ট্যাটাস বারের মধ্যে গ্যাপ */
+            margin-bottom: 10px; 
         }
         
-        /* **ভিডিও ডিউরেশন এবং ভিউজ বার** */
+        /* **ভিডিও ডিউরেশন এবং ভিউজ বার বিন্যাস** */
         #video-duration {
             display: flex;
             justify-content: space-between; /* ডিউরেশন বামে, ভিউজ ডানে */
             align-items: center;
-            /* **ছবির বিন্যাসের জন্য মার্জিন/প্যাডিং ঠিক করা হলো** */
             margin-top: 5px; 
         }
 
@@ -227,8 +226,7 @@
             height: 100%;
             object-fit: cover;
         }
-        
-        /* **ফরম্যাট বাটন গ্যাপ রিমুভ (অপরিবর্তিত)** */
+
         .format-selection {
             display: flex;
             justify-content: space-around;
@@ -303,6 +301,7 @@
             display: flex;
             align-items: center;
             gap: 5px;
+            /* **আন্ডারলাইন রিমুভ** */
             text-decoration: none; 
             font-family: 'Noto Sans', 'Hind Siliguri', sans-serif; 
         }
@@ -549,7 +548,6 @@
 
                 const pad = (num) => num.toString().padStart(2, '0');
 
-                // HH:MM:SS অথবা MM:SS ফরমেট
                 if (h > 0) {
                     return `${pad(h)}:${pad(m)}:${pad(s)}`;
                 }
@@ -739,6 +737,25 @@
                 return null;
             }
 
+            // helper to check if stream is audio only
+            function isAudioOnly(it){
+                // Check for known audio mime/ext or known itag (140)
+                return (it.mimeType||'').toLowerCase().includes('audio/') || (it.extension||'').toLowerCase().includes('m4a') || (it.extension||'').toLowerCase().includes('mp3') || it.itag==140;
+            }
+            
+            // helper to sort by resolution (small -> large)
+            function parseRes(it){
+                if(it.height) return Number(it.height);
+                const q = (it.quality_label || it.quality || '').toString();
+                const m = q.match(/(\d{2,4})p/);
+                if(m) return Number(m[1]);
+                return 0;
+            }
+            function sortAsc(list){ 
+                return list.filter(item => item.url).sort((a,b)=> parseRes(a)-parseRes(b) ); 
+            }
+
+
             // render function: take API response and format selection and fill downloadOptionsContainer
             function renderDownloadOptionsFromResponse(data, format, type){
                 downloadOptionsContainer.innerHTML = '';
@@ -767,27 +784,33 @@
                 if(fallbackUrl && !uniqueStreams.has(fallbackUrl)) uniqueStreams.set(fallbackUrl, { url: fallbackUrl });
                 const streamArr = Array.from(uniqueStreams.values());
 
-                // helper to check if stream is audio only
-                function isAudioOnly(it){
-                    return (it.mimeType||'').toLowerCase().includes('audio/') || (it.extension||'').toLowerCase().includes('m4a') || (it.extension||'').toLowerCase().includes('mp3') || it.itag==140;
-                }
-
-                // ক্রস-ফরম্যাট ফিল্টারিং: mp4 সেকশনে শুধু mp4 থাকবে
-                const mp4s = streamArr.filter(it => (it.mimeType||'').toLowerCase().includes('video/mp4') || (it.extension||'').toLowerCase().includes('mp4'));
-                const webms = streamArr.filter(it => (it.mimeType||'').toLowerCase().includes('video/webm') || (it.extension||'').toLowerCase().includes('webm'));
+                
+                // **অডিও-অনলি স্ট্রিম**
                 const audios = streamArr.filter(it => isAudioOnly(it)); 
 
-                // helper to sort by resolution (small -> large)
-                function parseRes(it){
-                    if(it.height) return Number(it.height);
-                    const q = (it.quality_label || it.quality || '').toString();
-                    const m = q.match(/(\d{2,4})p/);
-                    if(m) return Number(m[1]);
-                    return 0;
-                }
-                function sortAsc(list){ 
-                    return list.filter(item => item.url).sort((a,b)=> parseRes(a)-parseRes(b) ); 
-                }
+                // **ভিডিও এবং অডিও স্ট্রিম ফিল্টারিং (MP4 অডিও ফিক্স)**
+                const mp4s_raw = streamArr.filter(it => (it.mimeType||'').toLowerCase().includes('video/mp4') || (it.extension||'').toLowerCase().includes('mp4'));
+                
+                // **MP4 ফিল্টারিং কঠোর করা:** কম্বাইন্ড স্ট্রিমগুলির জন্য
+                const mp4s = mp4s_raw.filter(it => {
+                    const res = parseRes(it);
+                    const hasAudioProperty = (it.audioBitrate || it.audioEncoding || it.hasAudio === true);
+                    
+                    // 1. যদি explicitly অডিও প্রপার্টি থাকে এবং অডিও অনলি না হয় (API থেকে ইঙ্গিত)
+                    if (hasAudioProperty && !isAudioOnly(it)) return true;
+
+                    // 2. যদি রেজোলিউশন 480p এর নিচে হয় (সাধারণত ইউটিউব এই স্ট্রিমগুলি মিক্স করে)
+                    if (res > 0 && res <= 480 && !isAudioOnly(it)) return true;
+
+                    // 3. 720p/1080p শুধুমাত্র তখনই দেখাও যদি API স্পষ্টভাবে hasAudio=true বা AudioBitrate দেয়।
+                    if (res > 480 && (it.hasAudio === true || it.audioBitrate) && !isAudioOnly(it)) return true;
+
+                    return false;
+                });
+                
+                // WebM স্ট্রিম
+                const webms = streamArr.filter(it => (it.mimeType||'').toLowerCase().includes('video/webm') || (it.extension||'').toLowerCase().includes('webm'));
+
 
                 const mp4sS = sortAsc(mp4s);
                 const webmsS = sortAsc(webms);
@@ -795,7 +818,7 @@
 
                 // আইকন সহ হেডার যোগ করা
                 let headerHtml = '';
-                if(format === 'mp4') headerHtml = '<h3><i class="fas fa-video"></i> MP4 Download Options</h3>';
+                if(format === 'mp4') headerHtml = '<h3><i class="fas fa-video"></i> MP4 Download Options (Audio Included)</h3>';
                 else if(format === 'webm') headerHtml = '<h3><i class="fas fa-video"></i> WebM Download Options</h3>';
                 else if(format === 'mp3') headerHtml = '<h3><i class="fas fa-music"></i> MP3 Audio Download Options</h3>';
                 else if(format === 'thumbnail') headerHtml = '<h3><i class="fas fa-image"></i> Thumbnail Download Options</h3>';
@@ -808,7 +831,7 @@
                     if(mp4sS.length){
                         mp4sS.forEach(it=> html += makeRow(it));
                     } else {
-                        html += '<div class="small" style="color:var(--text-medium);padding:10px 0;">No MP4 video formats found.</div>';
+                        html += '<div class="small" style="color:var(--text-medium);padding:10px 0;">No guaranteed audio/video combined MP4 formats found. Try WebM or Audio.</div>';
                     }
                 } else if(format === 'webm'){
                     html += headerHtml;
@@ -881,7 +904,7 @@
                 return String(u||'').replace(/"/g,'&quot;').replace(/'/g,"'");
             }
 
-            // ডাউনলোড বাটন তৈরি (কপি বাটন নেই, আন্ডারলাইন নেই)
+            // ডাউনলোড বাটন তৈরি
             function makeRow(it){
                 const url = it.url || it.downloadUrl || it.streamUrl || it.mediaUrl || it.source || it.link || '';
                 const quality = it.quality || it.quality_label || (it.height? (it.height + 'p') : '') || (it.format || '');
