@@ -42,8 +42,8 @@
             --sidebar-text: #ecf0f1;
             --sidebar-hover: #34495e;
         }
-
-        /* **UI/UX: মোবাইল ফিট** */
+        
+        /* **UI/UX: স্ক্রল এবং সাইডবার ফিক্স** */
         body {
             background-color: var(--body-bg);
             color: var(--text-dark);
@@ -53,6 +53,11 @@
             min-height: 100vh; 
             padding: 0; 
             transition: background-color 0.3s;
+        }
+        
+        /* সাইডবার খোলা থাকলে বডিতে স্ক্রল বন্ধ */
+        body.sidebar-open {
+            overflow: hidden; 
         }
 
         .container {
@@ -66,6 +71,8 @@
             min-height: 100vh; 
             display: flex;
             flex-direction: column;
+            /* **মোবাইল স্ক্রলে সমস্যা এড়াতে** */
+            overflow-y: auto; 
         }
 
         .header {
@@ -106,7 +113,6 @@
             padding: 15px 0;
         }
         
-        /* **UI/UX: ডিউরেশন/ভিউজ বিন্যাস** */
         .video-info {
             margin-bottom: 10px; 
         }
@@ -136,7 +142,6 @@
             gap: 5px;
         }
 
-        /* **UI/UX: ফরম্যাট বাটন গ্যাপ ফিক্স** */
         .format-selection {
             display: flex;
             justify-content: space-around;
@@ -164,7 +169,6 @@
             border-bottom: 1px solid var(--card-border-grey);
         }
 
-        /* **UI/UX: ডাউনলোড বাটন আন্ডারলাইন ফিক্স** */
         .download-btn-small {
             background-color: var(--primary-blue);
             color: #ffffff;
@@ -185,6 +189,11 @@
             text-decoration: none; 
         }
 
+        .sidebar {
+            /* নিশ্চিত করা হলো এটি কন্টেইনার ওভারল্যাপ করবে না */
+            height: 100vh; 
+        }
+        
         .footer {
             text-align: center;
             margin-top: auto; 
@@ -405,8 +414,15 @@
                 return `${pad(m)}:${pad(s)}`;
             }
 
-            menuToggle.addEventListener('click', () => sidebar.classList.add('open'));
-            closeSidebar.addEventListener('click', () => sidebar.classList.remove('open'));
+            // **UI/UX: সাইডবার খোলা/বন্ধ হলে বডিতে ক্লাস যুক্ত করা**
+            menuToggle.addEventListener('click', () => {
+                sidebar.classList.add('open');
+                body.classList.add('sidebar-open');
+            });
+            closeSidebar.addEventListener('click', () => {
+                sidebar.classList.remove('open');
+                body.classList.remove('sidebar-open');
+            });
 
             darkModeToggle.addEventListener('change', () => {
                 body.classList.toggle('dark-mode', darkModeToggle.checked);
@@ -561,7 +577,6 @@
             }
             
             function isAudioOnly(it){
-                // We use the simpler version here as findAudioStreams already did the heavy lifting
                 return (it.mimeType||'').toLowerCase().includes('audio/') || (it.extension||'').toLowerCase().includes('m4a') || (it.extension||'').toLowerCase().includes('mp3') || it.itag==140;
             }
             
@@ -585,12 +600,11 @@
                 if(!data) return;
 
                 // **STEP 1: Find ALL normalized streams using the new robust helper**
-                const allStreams = findAudioStreams(data); // Using the robust helper for normalization
+                const allStreams = findAudioStreams(data);
                 
                 // **STEP 2: Filter the streams based on file type and audio presence**
                 
                 // Separate Audio-only streams
-                // Filter only true audio extensions (m4a, mp3, etc)
                 const audios = allStreams.filter(it => it.extension === 'mp3' || it.extension === 'm4a' || it.mimeType.includes('audio/')); 
 
                 // Filter MP4 streams (focus on guaranteed combined/muxed streams)
@@ -600,10 +614,8 @@
                     
                     if (!isMp4) return false;
                     
-                    // Exclude streams that are explicitly marked as audio-only by the robust helper
                     if (isAudioOnly(it)) return false; 
                     
-                    // Filter: Only include streams that are likely to be muxed (video + audio)
                     // Heuristic 1: Low resolution videos are often muxed
                     if (res > 0 && res <= 480) return true; 
 
