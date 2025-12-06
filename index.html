@@ -1,249 +1,227 @@
-<!DOCTYPE html>
-<html lang="hi">
+<!doctype html>
+<html lang="bn">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ऑल-इन-वन वीडियो डाउनलोडर</title>
-    <style>
-        /* मोबाइल-फ्रेंडली CSS3 स्टाइल */
-        :root {
-            --primary-color: #3498db;
-            --secondary-color: #2ecc71;
-            --text-color: #333;
-            --bg-color: #f4f7f6;
-            --card-bg: #fff;
-        }
-
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: var(--bg-color);
-            margin: 0;
-            padding: 20px;
-            color: var(--text-color);
-            line-height: 1.6;
-        }
-
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        h1 {
-            text-align: center;
-            color: var(--primary-color);
-            margin-bottom: 30px;
-            font-size: 1.8em;
-        }
-
-        /* इनपुट और बटन का स्टाइल */
-        .input-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-direction: column; /* मोबाइल पर स्टैक इनपुट और बटन */
-        }
-
-        #videoUrl {
-            flex-grow: 1;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 1em;
-            transition: border-color 0.3s;
-            width: 100%; /* फुल विड्थ */
-            box-sizing: border-box;
-        }
-
-        #videoUrl:focus {
-            border-color: var(--primary-color);
-            outline: none;
-        }
-
-        #downloadBtn {
-            padding: 12px 20px;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1em;
-            transition: background-color 0.3s, opacity 0.3s;
-            flex-shrink: 0;
-            font-weight: bold;
-        }
-
-        #downloadBtn:hover:not(:disabled) {
-            background-color: #2980b9;
-        }
-
-        #downloadBtn:disabled {
-            background-color: #95a5a6;
-            cursor: not-allowed;
-        }
-
-        /* डेस्कटॉप के लिए मीडिया क्वेरी */
-        @media (min-width: 600px) {
-            .input-group {
-                flex-direction: row; /* डेस्कटॉप पर एक ही लाइन में */
-            }
-
-            #videoUrl {
-                width: auto;
-            }
-        }
-
-        /* रिजल्ट्स सेक्शन का स्टाइल */
-        #results {
-            margin-top: 25px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
-        }
-
-        #results h2 {
-            color: var(--secondary-color);
-            font-size: 1.4em;
-            margin-bottom: 15px;
-        }
-
-        .media-link {
-            display: block;
-            margin-bottom: 10px;
-            padding: 10px;
-            background-color: #ecf0f1;
-            border-radius: 8px;
-            text-decoration: none;
-            color: var(--text-color);
-            transition: background-color 0.2s;
-        }
-
-        .media-link:hover {
-            background-color: #e0e6e8;
-        }
-
-        .media-link strong {
-            color: var(--primary-color);
-            margin-right: 8px;
-        }
-
-        .error-message {
-            color: #e74c3c;
-            padding: 10px;
-            background-color: #fdd;
-            border: 1px solid #f99;
-            border-radius: 8px;
-        }
-    </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>YouTube Downloader (RapidAPI) — Demo</title>
+<style>
+  :root{--bg:#071428;--card:#071a2b;--accent:#06b6d4;--muted:#9fb6c8}
+  body{margin:0;font-family:system-ui,Segoe UI,Roboto;background:linear-gradient(180deg,#041025,#071429);color:#e8f7fb;padding:14px}
+  .wrap{max-width:920px;margin:0 auto}
+  .card{background:var(--card);padding:14px;border-radius:12px;box-shadow:0 8px 30px rgba(2,6,23,0.6)}
+  h1{margin:0 0 6px;font-size:18px}
+  p.lead{margin:0;color:var(--muted);font-size:13px}
+  label{display:block;margin-top:10px;color:var(--muted);font-size:13px}
+  input[type=url], input[type=text]{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+  .row{display:flex;gap:8px;margin-top:8px}
+  .btn{background:var(--accent);color:#022;padding:10px 12px;border-radius:8px;border:0;cursor:pointer;font-weight:700}
+  .btn.sec{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
+  .notice{font-size:13px;color:var(--muted);margin-top:8px}
+  .result{margin-top:12px;display:grid;gap:10px}
+  .media{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:8px;background:rgba(255,255,255,0.02)}
+  .media .left{max-width:66%}
+  a.link{padding:8px 10px;border-radius:7px;background:rgba(6,182,212,0.12);color:#cfefff;text-decoration:none;font-weight:600}
+  img.thumb{width:100%;max-width:160px;border-radius:8px}
+  @media(max-width:600px){ .row{flex-direction:column} .media{flex-direction:column;align-items:flex-start} a.link{display:block;margin-top:8px} }
+</style>
 </head>
 <body>
+  <div class="wrap">
+    <div class="card">
+      <h1>YouTube Downloader (RapidAPI)</h1>
+      <p class="lead">Paste your RapidAPI key once, then paste a YouTube URL (or ID) and press Fetch. (Client-side demo)</p>
 
-    <div class="container">
-        <h1>📹 ऑल-इन-वन डाउनलोडर</h1>
+      <label>RapidAPI Key (x-rapidapi-key)</label>
+      <div class="row">
+        <input id="apiKey" type="text" placeholder="Paste your RapidAPI key here (stored locally)" />
+        <button id="saveKey" class="btn sec">Save</button>
+      </div>
 
-        <div class="input-group">
-            <input type="url" id="videoUrl" placeholder="वीडियो URL पेस्ट करें (जैसे: TikTok, Instagram)" required>
-            <button id="downloadBtn">डाउनलोड प्राप्त करें</button>
-        </div>
+      <label>Video URL or ID</label>
+      <div class="row">
+        <input id="videoInput" type="url" placeholder="https://www.youtube.com/watch?v=..." />
+        <button id="fetchBtn" class="btn">Fetch</button>
+      </div>
 
-        <p id="statusMessage" style="text-align: center; color: var(--primary-color); font-weight: bold;"></p>
+      <div id="status" class="notice"></div>
 
-        <div id="results">
-            </div>
+      <div id="info" class="result"></div>
+
+      <div class="notice" style="margin-top:10px">
+        <strong>Important:</strong> This demo uses a third-party RapidAPI. API quota/limits apply. Do not publish your API key publicly.
+      </div>
     </div>
+  </div>
 
-    <script>
-        // API क्रेडेंशियल्स (इन्हें सर्वर-साइड में रखना सुरक्षित होता है)
-        const RAPID_API_KEY = "29f8c3b79amshc7b9755d426320dp1b94fajsn62b1821d47db";
-        const RAPID_API_HOST = "social-download-all-in-one.p.rapidapi.com";
-        const API_ENDPOINT = "https://social-download-all-in-one.p.rapidapi.com/v1/social/autolink";
+<script>
+  // Config: API host & base path
+  const API_HOST = 'youtube-media-downloader.p.rapidapi.com';
+  const API_BASE = 'https://' + API_HOST + '/v2/video/details';
 
-        // DOM एलिमेंट्स
-        const videoUrlInput = document.getElementById('videoUrl');
-        const downloadBtn = document.getElementById('downloadBtn');
-        const resultsDiv = document.getElementById('results');
-        const statusMessage = document.getElementById('statusMessage');
+  // UI refs
+  const apiKeyEl = document.getElementById('apiKey');
+  const saveKeyBtn = document.getElementById('saveKey');
+  const videoInput = document.getElementById('videoInput');
+  const fetchBtn = document.getElementById('fetchBtn');
+  const statusEl = document.getElementById('status');
+  const infoEl = document.getElementById('info');
 
-        // बटन क्लिक हैंडलर
-        downloadBtn.addEventListener('click', handleDownload);
+  // Load stored key if any
+  if(localStorage.getItem('rapid_key')) apiKeyEl.value = localStorage.getItem('rapid_key');
 
-        async function handleDownload() {
-            const url = videoUrlInput.value.trim();
-            resultsDiv.innerHTML = ''; // पुराने रिजल्ट्स को हटाओ
-            statusMessage.textContent = ''; // स्टेटस मैसेज क्लियर करो
+  saveKeyBtn.addEventListener('click', () => {
+    const k = apiKeyEl.value.trim();
+    if(!k) return alert('Paste your RapidAPI key first');
+    localStorage.setItem('rapid_key', k);
+    status('API key saved locally. (Visible on this device only)');
+  });
 
-            if (!url) {
-                statusMessage.textContent = 'कृपया एक वीडियो URL दर्ज करें।';
-                return;
-            }
+  fetchBtn.addEventListener('click', async () => {
+    clearInfo();
+    const raw = videoInput.value.trim();
+    if(!raw) return alert('Paste a YouTube URL or ID');
+    const apiKey = localStorage.getItem('rapid_key') || apiKeyEl.value.trim();
+    if(!apiKey) return alert('API key missing. Paste & Save it first.');
 
-            statusMessage.textContent = '🔍 जानकारी प्राप्त की जा रही है...';
-            downloadBtn.disabled = true; // बटन को डिसेबल करो
+    // extract videoId from URL or accept direct ID
+    const vid = extractYouTubeId(raw);
+    if(!vid) return alert('Unable to parse video ID. Use a standard YouTube URL or just the ID.');
+    status('Fetching metadata for video ID: ' + vid + ' ...');
 
-            try {
-                const response = await fetch(API_ENDPOINT, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'x-rapidapi-host': RAPID_API_HOST,
-                        'x-rapidapi-key': RAPID_API_KEY
-                    },
-                    body: JSON.stringify({ url: url })
-                });
+    // build URL
+    const qs = new URLSearchParams({ videoId: vid, urlAccess: 'normal', videos: 'auto', audios: 'auto' });
+    const url = API_BASE + '?' + qs.toString();
 
-                // HTTP एरर चेक करना
-                if (!response.ok) {
-                    throw new Error(`HTTP Error! Status: ${response.status}`);
-                }
-
-                const data = await response.json();
-                
-                // API एरर चेक करना
-                if (data.error) {
-                    throw new Error(`API Error: ${data.error}`);
-                }
-
-                displayResults(data);
-
-            } catch (error) {
-                console.error('Download Error:', error);
-                resultsDiv.innerHTML = `<p class="error-message">❌ डाउनलोड जानकारी प्राप्त करने में कोई त्रुटि हुई। कृपया URL की जाँच करें या बाद में प्रयास करें।</p>`;
-            } finally {
-                downloadBtn.disabled = false; // बटन को फिर से एनेबल करो
-                statusMessage.textContent = ''; // स्टेटस मैसेज क्लियर करो
-            }
+    try {
+      const r = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'x-rapidapi-host': API_HOST,
+          'x-rapidapi-key': apiKey
         }
+      });
+      if(!r.ok){
+        const txt = await r.text().catch(()=> '');
+        throw new Error('API error ' + r.status + (txt ? (': '+txt) : ''));
+      }
+      const data = await r.json();
+      renderResponse(data);
+      status('Fetched — see results below.');
+    } catch(err) {
+      console.error(err);
+      status('Error: ' + err.message);
+      infoEl.innerHTML = `<div style="color:#f88">Request failed: ${escapeHtml(err.message)}</div>`;
+    }
+  });
 
-        // रिजल्ट्स को डिस्प्ले करने का फंक्शन
-        function displayResults(data) {
-            if (!data.medias || data.medias.length === 0) {
-                resultsDiv.innerHTML = `<p class="error-message">⚠️ इस URL के लिए कोई डाउनलोड लिंक नहीं मिला।</p>`;
-                return;
-            }
+  // helpers
+  function status(msg){ statusEl.textContent = msg; }
+  function clearInfo(){ infoEl.innerHTML = ''; status(''); }
 
-            let html = '<h2>⬇️ डाउनलोड लिंक्स उपलब्ध</h2>';
-            
-            // वीडियो/ऑडियो लिंक्स को लूप करें
-            data.medias.forEach((media, index) => {
-                const quality = media.quality || 'Unknown Quality';
-                const extension = media.extension || 'file';
-                const type = media.type || 'Media';
-                const size = media.data_size ? (media.data_size / 1024 / 1024).toFixed(2) + ' MB' : 'Unknown Size';
-                
-                html += `
-                    <a href="${media.url}" class="media-link" target="_blank" download>
-                        <strong>${type.toUpperCase()}:</strong> ${quality} (${extension}) - ${size}
-                        <br>
-                        <small>लिंक पर क्लिक करें और डाउनलोड करें।</small>
-                    </a>
-                `;
-            });
+  function extractYouTubeId(input){
+    // if looks like ID (11+ chars, letters/numbers/_-)
+    if(/^[A-Za-z0-9_-]{8,}$/.test(input) && !input.includes('/')) return input;
+    try {
+      const u = new URL(input);
+      if(u.hostname.includes('youtu.be')) return u.pathname.slice(1);
+      if(u.hostname.includes('youtube.com')){
+        const v = u.searchParams.get('v');
+        if(v) return v;
+        // sometimes /embed/ID
+        const parts = u.pathname.split('/');
+        const idx = parts.indexOf('embed');
+        if(idx >= 0 && parts[idx+1]) return parts[idx+1];
+      }
+    } catch(e){
+      return null;
+    }
+    return null;
+  }
 
-            resultsDiv.innerHTML = html;
+  function renderResponse(data){
+    // generic robust renderer: show title/thumbnail then list available media urls/formats
+    infoEl.innerHTML = '';
+
+    // title / thumbnail
+    const top = document.createElement('div');
+    top.style.display = 'flex';
+    top.style.gap = '12px';
+    top.style.alignItems = 'center';
+
+    const thumb = document.createElement('img');
+    thumb.className = 'thumb';
+    thumb.src = data.thumbnail || data.thumb || '';
+    thumb.alt = 'thumbnail';
+    thumb.style.maxWidth = '160px';
+    thumb.style.borderRadius = '8px';
+    top.appendChild(thumb);
+
+    const meta = document.createElement('div');
+    meta.innerHTML = `<div style="font-weight:700">${escapeHtml(data.title || data.title_long || data.videoTitle || data.name || 'Untitled')}</div>
+                      <div style="color:var(--muted);font-size:13px;margin-top:6px">${escapeHtml(data.uploader || data.author || data.owner || '')}</div>
+                      <div style="color:var(--muted);font-size:12px;margin-top:8px">Duration: ${data.duration || data.length || '-'} sec</div>`;
+    top.appendChild(meta);
+    infoEl.appendChild(top);
+
+    // Some APIs return arrays named formats, medias, streams or video/audio arrays.
+    const candidates = data.formats || data.medias || data.streams || data.downloads || data.results || [];
+    if(Array.isArray(candidates) && candidates.length){
+      const list = document.createElement('div');
+      list.style.marginTop = '12px';
+      candidates.forEach((m, i) => {
+        // try find a url in different fields
+        const url = m.url || m.downloadUrl || m.source || m.link || m.mediaUrl || m.streamUrl;
+        const ext = m.ext || m.extension || (m.mime && (m.mime.split('/').pop())) || '';
+        const quality = m.quality || m.quality_label || m.format || m.format_note || (m.qualityString || '');
+        const size = m.filesize || m.size || m.data_size || m.contentLength || null;
+
+        const el = document.createElement('div');
+        el.className = 'media';
+        const left = document.createElement('div'); left.className='left';
+        left.innerHTML = `<div style="font-weight:700">${escapeHtml(String(quality || ('format ' + (i+1))))} ${ext?(' • '+escapeHtml(ext)):''}</div>
+                          <div style="color:var(--muted);font-size:13px">${size ? (humanFileSize(size)) : ''}</div>`;
+        const right = document.createElement('div');
+        if(url){
+          const open = document.createElement('a'); open.className='link'; open.href = url; open.target='_blank'; open.textContent='Open';
+          const dl = document.createElement('a'); dl.className='link'; dl.href = url; dl.target='_blank'; dl.textContent='Download'; dl.style.marginLeft='8px';
+          right.appendChild(open); right.appendChild(dl);
+        } else {
+          right.innerHTML = `<small style="color:var(--muted)">No direct URL in this item</small>`;
         }
+        el.appendChild(left); el.appendChild(right);
+        list.appendChild(el);
+      });
+      infoEl.appendChild(list);
+    } else {
+      // fallback: maybe response directly contains urls fields
+      const directUrl = data.downloadUrl || data.videoUrl || data.url || data.streamUrl;
+      if(directUrl){
+        const el = document.createElement('div'); el.className='media';
+        el.innerHTML = `<div class="left"><div style="font-weight:700">Direct</div></div><div><a class="link" target="_blank" href="${escapeAttr(directUrl)}">Open / Download</a></div>`;
+        infoEl.appendChild(el);
+      } else {
+        infoEl.innerHTML += `<div style="color:#fbb;margin-top:12px">No downloadable media found in API response. Inspect <code>console</code> for the full response.</div>`;
+        console.log('API response (full):', data);
+      }
+    }
+  }
 
-    </script>
+  // helpers
+  function humanFileSize(bytes){
+    if(!bytes) return '';
+    const b = Number(bytes);
+    if(isNaN(b)) return '';
+    const thresh = 1024;
+    if(Math.abs(b) < thresh) return b + ' B';
+    const units = ['KB','MB','GB','TB'];
+    let u = -1;
+    do { b = b / thresh; ++u; } while(Math.abs(b) >= thresh && u < units.length - 1);
+    return b.toFixed(2) + ' ' + units[u];
+  }
+
+  function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function escapeAttr(s){ return String(s||'').replace(/"/g,'&quot;'); }
+
+</script>
 </body>
 </html>
