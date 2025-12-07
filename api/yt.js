@@ -1,20 +1,18 @@
 // File: api/yt.js (Vercel Serverless Function)
-// এই ফাইলটি আপনার Vercel Environment Variable (RAPIDAPI_KEY) ব্যবহার করবে।
+// এই ফাইলটি শুধু URL প্যারামিটার গ্রহণ করবে এবং এরর হ্যান্ডলিং করে ডেটা ফিল্টার করবে।
 
 export default async function handler(req, res) {
   try {
-    const { url } = req.query; // ফ্রন্টএন্ড থেকে শুধু URL আশা করা হচ্ছে
+    const { url } = req.query;
 
-    // 1) URL check
     if (!url) {
       return res.status(400).json({
         ok: false,
         where: "api",
-        error: "Missing url query param. Please provide the full YouTube URL.",
+        error: "Missing url query param. Use /api/yt?url=YOUTUBE_URL",
       });
     }
 
-    // 2) RapidAPI key (Vercel env থেকে)
     const apiKey = process.env.RAPIDAPI_KEY;
     if (!apiKey) {
       return res.status(500).json({
@@ -24,8 +22,9 @@ export default async function handler(req, res) {
       });
     }
 
+    // প্যারামিটার হিসেবে পুরো URL পাঠানো হচ্ছে (videoId extract এর ঝামেলা এড়াতে)
     const params = new URLSearchParams({
-      url: url, // সরাসরি URL প্যারামিটার হিসেবে পাঠানো হচ্ছে
+      url: url, 
       urlAccess: "normal",
       videos: "auto",
       audios: "auto",
@@ -35,7 +34,6 @@ export default async function handler(req, res) {
       "https://youtube-media-downloader.p.rapidapi.com/v2/video/details?" +
       params.toString();
 
-    // --- RapidAPI কল ---
     const r = await fetch(apiUrl, {
       method: "GET",
       headers: {
@@ -46,13 +44,8 @@ export default async function handler(req, res) {
 
     const txt = await r.text();
     let raw;
-    try {
-      raw = JSON.parse(txt);
-    } catch {
-      raw = null;
-    }
+    try { raw = JSON.parse(txt); } catch { raw = null; }
 
-    // 3) RapidAPI থেকে error এলে একই status + debug ফেরত দাও (Key Invalid/Quota Exceeded)
     if (!r.ok) {
       return res.status(r.status).json({
         ok: false,
@@ -75,9 +68,7 @@ export default async function handler(req, res) {
 
     // ---- স্ট্রিম প্রসেসিং (Dedupe, Audio/Video Separate) ----
     const streams = [];
-    const addArr = (arr) => {
-      if (Array.isArray(arr)) arr.forEach((it) => streams.push(it));
-    };
+    const addArr = (arr) => { if (Array.isArray(arr)) arr.forEach((it) => streams.push(it)); };
 
     if (raw.videos && Array.isArray(raw.videos.items)) addArr(raw.videos.items);
     ["medias", "formats", "streams", "results", "downloads", "videoStreams", "audioStreams", "items"].forEach(
@@ -90,12 +81,7 @@ export default async function handler(req, res) {
     for (const it of streams) {
       if (!it || typeof it !== "object") continue;
       const u =
-        it.url ||
-        it.downloadUrl ||
-        it.streamUrl ||
-        it.mediaUrl ||
-        it.source ||
-        it.link;
+        it.url || it.downloadUrl || it.streamUrl || it.mediaUrl || it.source || it.link;
       if (!u || seenUrls.has(u)) continue;
       seenUrls.add(u);
 
@@ -110,8 +96,7 @@ export default async function handler(req, res) {
         hasAudio: typeof it.hasAudio !== "undefined" ? !!it.hasAudio : null,
         height: it.height || null,
         width: it.width || null,
-        size:
-          it.sizeText || it.size || it.filesize || it.data_size || null,
+        size: it.sizeText || it.size || it.filesize || it.data_size || null,
         quality:
           it.quality_label ||
           it.quality ||
@@ -144,17 +129,21 @@ export default async function handler(req, res) {
         continue;
       }
       
-      // MP4 Audio Fix: Include if hasAudio is true OR if it's low resolution (likely muxed)
       const isMuxedCandidate = (s.height > 0 && s.height <= 480) || s.hasAudio === true || s.bitrate;
 
       if (ext === "mp4" || mt.includes("video/mp4")) {
         if (isMuxedCandidate) {
-            mp4.push(s); // High confidence audio included
+            mp4.push(s); 
         } else if(hasRes) {
-            other.push(s); // Video-only (mute) streams move to other/discard (if you want to strictly avoid mute videos in main list)
+            // Video-only streams (high res) also added for full options, but frontend will warn.
+            mp4.push(s); 
         }
       } else if (ext === "webm" || mt.includes("video/webm")) {
-         webm.push(s); // WebM lists often need the video-only streams too for high res
+         if (isMuxedCandidate) {
+            webm.push(s);
+        } else if(hasRes) {
+            webm.push(s);
+        }
       } else {
         other.push(s);
       }
@@ -177,10 +166,7 @@ export default async function handler(req, res) {
     function sortByHeight(list) {
       return list.sort((a, b) => (a.height || 0) - (b.height || 0));
     }
-    
-    // Add audio-only video streams (if they are high res video-only) to MP4/WebM to give users options
-    // NOTE: This part is simplified on the backend to prioritize cleaned data.
-    
+
     return res.status(200).json({
       ok: true, // Success flag for frontend
       errorId: raw.errorId,
