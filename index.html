@@ -3,220 +3,191 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Social & YouTube Downloader - কোডিং পার্টনার</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700;900&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>ভিডিও ডাউনলোডার | VDownloader</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⬇️</text></svg>">
     
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Noto Sans', 'Hind Siliguri', sans-serif;
-        }
-
+        /* --- CSS Styling (style.css content) --- */
         :root {
-            --primary-blue: #3EAEFF;
-            --secondary-blue: #1abc9c; 
-            --text-dark: #333333;
-            --text-medium: #666666;
-            --background-grey: #f7f7f7;
-            --card-border-grey: #dcdcdc;
-            --body-bg: var(--background-grey);
-            --container-bg: #ffffff;
-            --sidebar-bg: #ffffff;
-            --sidebar-text: var(--text-dark);
-            --sidebar-hover: #eef3f7;
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --background-color: #f8f9fa;
+            --card-background: #ffffff;
+            --text-color: #212529;
+            --border-color: #dee2e6;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
         }
 
-        body.dark-mode {
-            --text-dark: #ecf0f1;
-            --text-medium: #bdc3c7;
-            --background-grey: #2c3e50;
-            --body-bg: #1e272e;
-            --container-bg: #2c3e50;
-            --card-border-grey: #34495e;
-            --sidebar-bg: #2c3e50;
-            --sidebar-text: #ecf0f1;
-            --sidebar-hover: #34495e;
+        /* Dark Mode */
+        .dark-mode {
+            --background-color: #121212;
+            --card-background: #1e1e1e;
+            --text-color: #e0e0e0;
+            --border-color: #333333;
+            --secondary-color: #9a9a9a;
         }
 
         body {
-            background-color: var(--body-bg);
-            color: var(--text-dark);
-            display: flex;
-            justify-content: center;
-            align-items: center; 
-            min-height: 100vh; 
-            padding: 0; 
-            transition: background-color 0.3s;
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+            line-height: 1.6;
         }
 
         .container {
-            width: 100%;
-            max-width: 450px;
-            background-color: var(--container-bg);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 0 auto;
             padding: 20px;
-            position: relative;
-            z-index: 10;
-            min-height: 100vh; 
-            display: flex;
-            flex-direction: column;
         }
 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            margin-bottom: 16px;
+        header {
+            text-align: center;
+            padding: 20px 0;
         }
 
         .logo {
-            font-size: 20px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
+            font-size: 2.2em;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 5px;
         }
 
-        .logo .youtube-text {
-            color: var(--text-dark); 
-            font-weight: 900;
+        .description {
+            color: var(--secondary-color);
+            margin-bottom: 20px;
+            font-size: 0.9em;
         }
 
-        .logo .downloader-text {
-            color: var(--primary-blue); 
-            font-weight: 900;
-        }
-
-        .menu-icon i {
-            font-size: 24px;
-            color: var(--text-dark);
-            cursor: pointer;
-        }
-
-        .download-card {
+        /* Search Bar */
+        .search-container {
             display: flex;
-            flex-direction: column;
-            gap: 18px;
-        }
-
-        h2 {
-            font-size: 15px;
-            font-weight: 600;
-            color: var(--text-medium);
-            margin-bottom: 6px;
-        }
-        
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        #video-url-input {
-            padding: 11px 13px;
-            border: 1px solid var(--card-border-grey);
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             border-radius: 8px;
-            font-size: 14px;
+            overflow: hidden;
+            background-color: var(--card-background);
+        }
+
+        #urlInput {
+            flex-grow: 1;
+            padding: 12px;
+            border: none;
+            font-size: 1em;
+            background-color: var(--card-background);
+            color: var(--text-color);
+        }
+
+        #urlInput:focus {
             outline: none;
-            background-color: var(--container-bg);
-            color: var(--text-dark);
         }
 
-        .generate-btn {
-            padding: 13px;
-            background-color: var(--primary-blue);
-            color: #ffffff;
+        #fetchButton {
+            background-color: var(--primary-color);
+            color: white;
             border: none;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: 600;
+            padding: 12px 20px;
             cursor: pointer;
-        }
-
-        .preview-section {
-            background-color: transparent;
-            border: 2px dashed var(--card-border-grey);
-            border-radius: 8px;
+            font-size: 1em;
+            transition: background-color 0.3s;
             display: flex;
+            align-items: center;
             justify-content: center;
-            align-items: center;
+        }
+
+        #fetchButton:hover:not(:disabled) {
+            background-color: #0056b3;
+        }
+
+        #fetchButton:disabled {
+            background-color: var(--secondary-color);
+            cursor: not-allowed;
+        }
+
+        .status-message {
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
             text-align: center;
-            padding: 18px;
-            min-height: 150px;
-            margin-bottom: 8px;
-            transition: all 0.3s;
+            font-weight: bold;
+            display: none;
         }
-        
-        .preview-section.loaded {
+
+        .status-error {
+            background-color: #f8d7da;
+            color: var(--danger-color);
+            border: 1px solid var(--danger-color);
+        }
+
+        .status-loading {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            justify-content: space-around;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 15px;
+            background-color: var(--card-background);
+            border-radius: 8px 8px 0 0;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 12px 5px;
+            text-align: center;
+            background: none;
             border: none;
-            padding: 0;
-        }
-        
-        .initial-preview .video-icon {
-            font-size: 30px;
-            color: var(--text-medium);
-            margin-bottom: 8px;
-        }
-
-        .initial-preview p {
-            color: var(--text-medium);
-            font-size: 14px;
+            cursor: pointer;
+            color: var(--secondary-color);
+            transition: color 0.3s, background-color 0.3s;
+            font-weight: bold;
+            font-size: 0.9em;
+            border-bottom: 3px solid transparent;
         }
 
-        .loaded-preview {
-            display: none; 
-            width: 100%;
-        }
-        
-        .video-details {
-            padding: 12px 0;
+        .tab-button.active {
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--primary-color);
         }
 
-        .video-info {
-            margin-bottom: 8px; 
+        .tab-content {
+            display: none;
+            padding: 15px 0;
         }
 
-        .video-info h3 {
-            font-size: 17px;
-            font-weight: 900;
-            color: var(--primary-blue);
-            margin: 0; 
-            margin-bottom: 8px; 
-        }
-        
-        #video-meta {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 4px; 
-            gap: 8px;
+        .tab-content.active {
+            display: block;
         }
 
-        #video-meta p {
-            font-size: 13px;
-            color: var(--text-medium);
-            font-weight: 600;
-            margin: 0; 
-            display: flex;
-            align-items: center;
-            gap: 5px;
+        /* Video Info Preview */
+        #videoInfo {
+            background-color: var(--card-background);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-bottom: 20px;
+            display: none;
         }
 
         .thumbnail-container {
             position: relative;
             width: 100%;
-            padding-bottom: 56.25%;
-            background-color: var(--card-border-grey);
-            border-radius: 8px;
+            /* 16:9 Aspect Ratio (56.25% height relative to width) */
+            padding-bottom: 56.25%; 
             overflow: hidden;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            background-color: #000;
         }
 
-        .thumbnail-container img {
+        #thumbnail {
             position: absolute;
             top: 0;
             left: 0;
@@ -225,907 +196,640 @@
             object-fit: cover;
         }
 
-        .format-selection {
-            display: flex;
-            justify-content: space-around;
-            gap: 5px;
-            flex-wrap: nowrap;
-            overflow-x: auto;
-            margin-bottom: 0;
-            padding: 0;
-            scrollbar-width: none;
-        }
-        
-        .format-selection::-webkit-scrollbar {
-            display: none;
+        .video-details {
+            padding: 15px;
         }
 
-        .format-btn {
-            padding: 7px 9px;
-            border: 1px solid var(--card-border-grey);
-            background-color: var(--container-bg);
-            color: var(--text-medium);
-            border-radius: 6px;
-            font-size: 12px;
-            cursor: pointer;
-            flex-shrink: 0;
-            font-weight: 700;
-            transition: all 0.2s;
-        }
-        
-        .format-btn.active {
-            background-color: var(--primary-blue);
-            color: #ffffff;
-            border-color: var(--primary-blue);
-        }
-
-        .download-options-container {
-            margin-top: 12px;
-            border-top: 1px solid var(--card-border-grey);
-            padding-top: 12px;
-            display: none;
-            width: 100%;
-        }
-        
-        .download-options-container h3 {
-            font-size: 15px;
-            color: var(--primary-blue);
-            margin-bottom: 6px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .download-options-container h3 i {
-            font-size: 17px;
-        }
-
-        .download-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 9px 0;
-            border-bottom: 1px solid var(--card-border-grey);
-        }
-
-        .download-btn-small {
-            background-color: var(--primary-blue);
-            color: #ffffff;
-            padding: 7px 13px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            text-decoration: none;
-            font-family: 'Noto Sans', 'Hind Siliguri', sans-serif; 
-        }
-
-        .download-item a {
-            text-decoration: none; 
-        }
-        
-        .download-btn-small:hover {
-            background-color: #3598e3;
-        }
-        
-        .format-tag {
-            background-color: var(--secondary-blue);
-            color: #ffffff;
-            padding: 3px 6px;
-            border-radius: 4px;
-            font-size: 11px;
+        #videoTitle {
+            font-size: 1.2em;
             font-weight: 600;
-            margin-right: 8px;
+            margin-top: 0;
+            margin-bottom: 10px;
         }
 
-        .sidebar {
-            position: fixed;
-            top: 0;
-            right: -300px;
-            width: 280px;
-            height: 100%;
-            background-color: var(--sidebar-bg);
-            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
-            z-index: 100;
-            transition: right 0.3s ease-in-out;
-            padding: 20px;
-            overflow-y: auto;
+        .meta-data {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85em;
+            color: var(--secondary-color);
+        }
+        
+        /* Format Lists */
+        .format-list, .thumbnail-list, .api-list {
+            list-style: none;
+            padding: 0;
         }
 
-        .sidebar.open {
-            right: 0;
-        }
-
-        .sidebar-header {
+        .format-item, .thumbnail-item, .api-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 16px;
-        }
-
-        #close-sidebar {
-            font-size: 22px;
-            color: var(--text-dark);
-            cursor: pointer;
-            padding: 5px;
-        }
-        
-        .sidebar h3 {
-            color: var(--primary-blue);
-            font-size: 18px;
-            font-weight: 700;
-        }
-
-        .sidebar-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            color: var(--sidebar-text);
-            border-bottom: 1px solid var(--card-border-grey);
-            cursor: pointer;
-        }
-        
-        .sidebar-item:hover {
-            background-color: var(--sidebar-hover);
-            padding-left: 4px;
-        }
-        
-        .sidebar-api-input {
-            margin-top: 16px;
-            padding: 10px;
-            border: 1px solid var(--card-border-grey);
-            border-radius: 8px;
-            background-color: var(--background-grey);
-        }
-        
-        .api-input-group {
-            display: flex;
-            align-items: center;
-            padding-bottom: 4px;
-        }
-
-        .api-input-group textarea {
-            width: 100%;
-            min-height: 70px;
-            border: none;
-            outline: none;
-            background-color: transparent;
-            color: inherit;
-            font-family: monospace;
-            font-size: 12px;
-            resize: vertical;
-        }
-
-        .footer {
-            text-align: center;
-            margin-top: auto; 
-            padding-top: 18px;
-            font-size: 12px;
-            color: var(--text-medium);
-        }
-        
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 40px;
-            height: 20px;
-        }
-
-        .switch input {display:none;}
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0;
-            right: 0; bottom: 0;
-            background-color: #ccc;
-            transition: .2s;
-            border-radius: 20px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 16px;
-            width: 16px;
-            left: 2px;
-            bottom: 2px;
-            background-color: white;
-            transition: .2s;
-            border-radius: 50%;
-        }
-
-        input:checked + .slider {
-            background-color: var(--primary-blue);
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(20px);
-        }
-
-        input#yt-backend-input {
-            width: 100%;
-            padding: 6px 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            border: 1px solid var(--border-color);
             border-radius: 6px;
-            border: 1px solid var(--card-border-grey);
-            font-size: 12px;
-            outline: none;
-            background-color: #fdfdfd;
+            background-color: var(--card-background);
+            transition: background-color 0.2s;
         }
+        
+        .format-item:hover {
+            background-color: var(--background-color);
+        }
+
+        .format-info {
+            flex-grow: 1;
+            padding-right: 10px;
+        }
+
+        .resolution, .quality {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-right: 10px;
+        }
+
+        .ext {
+            font-size: 0.8em;
+            color: var(--secondary-color);
+            padding: 2px 6px;
+            border-radius: 3px;
+            background-color: var(--border-color);
+        }
+
+        .download-btn {
+            background-color: var(--success-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none !important; /* Remove underline */
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            transition: background-color 0.3s;
+        }
+
+        .download-btn:hover {
+            background-color: #1e7e34;
+        }
+        
+        .download-btn i {
+            margin-right: 5px;
+        }
+
+        /* Settings Tab */
+        .settings-section {
+            padding: 15px;
+            background-color: var(--card-background);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .settings-section h4 {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+
+        .setting-toggle {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        /* Input Styles in Settings */
+        .setting-input, .api-input-group {
+            margin-top: 10px;
+            margin-bottom: 15px;
+        }
+
+        .setting-input input, .api-input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            box-sizing: border-box;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+
+        .api-item {
+            gap: 10px;
+            word-break: break-all;
+        }
+
+        .api-item .api-key-text {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .remove-btn {
+            background-color: var(--danger-color);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            flex-shrink: 0;
+        }
+        .remove-btn:hover {
+            background-color: #a71d2a;
+        }
+        
+        .add-api-btn {
+            background-color: var(--primary-color);
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .add-api-btn:hover {
+             background-color: #0056b3;
+        }
+
+        /* Thumbnail List */
+        .thumbnail-item {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .thumbnail-item img {
+            width: 100%;
+            height: auto;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .thumbnail-info {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            align-items: center;
+        }
+        .resolution-badge {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 0.8em;
+        }
+        
+        /* Mobile Icons */
+        @media (max-width: 450px) {
+            .tab-button {
+                font-size: 0.8em;
+                padding: 12px 2px;
+            }
+            .download-btn {
+                padding: 8px 10px;
+            }
+        }
+        
+        /* Font Awesome Icons (Simulated) */
+        .icon-download::before { content: "⬇"; margin-right: 5px; }
+        .icon-search::before { content: "🔎"; }
+        .icon-video::before { content: "🎥"; }
+        .icon-audio::before { content: "🎧"; }
+        .icon-thumbnail::before { content: "🖼️"; }
+        .icon-settings::before { content: "⚙️"; }
+        .icon-remove::before { content: "❌"; }
     </style>
 </head>
-<body>
-
+<body class="light-mode">
     <div class="container">
-        <header class="header">
-            <h1 class="logo">
-                <span class="youtube-text">SOCIAL</span>
-                <span class="downloader-text">DOWNLOADER</span>
-            </h1>
-            <div class="menu-icon" id="menu-toggle">
-                <i class="fas fa-bars"></i>
-            </div>
+        
+        <header>
+            <div class="logo">VDownloader ⬇️</div>
+            <p class="description">YouTube, Facebook, TikTok, Instagram থেকে ভিডিও বা অডিও ডাউনলোড করুন।</p>
+            <div class="status-message" id="statusMessage"></div>
         </header>
         
-        <main class="download-card">
+        <div class="search-container">
+            <input type="text" id="urlInput" placeholder="এখানে ভিডিও লিঙ্ক পেস্ট করুন...">
+            <button id="fetchButton" class="icon-search" disabled>ফেচ করুন</button>
+        </div>
+
+        <div class="tabs" id="tabsContainer" style="display: none;">
+            <button class="tab-button active" data-tab="videoTab"><span class="icon-video"></span> VIDEO</button>
+            <button class="tab-button" data-tab="audioTab"><span class="icon-audio"></span> AUDIO</button>
+            <button class="tab-button" data-tab="thumbnailTab"><span class="icon-thumbnail"></span> THUMBNAIL</button>
+            <button class="tab-button" data-tab="settingsTab"><span class="icon-settings"></span> SETTINGS</button>
+        </div>
+
+        <div id="videoInfo">
+            <div class="thumbnail-container">
+                <img id="thumbnail" src="" alt="ভিডিও থাম্বনেইল">
+            </div>
+            <div class="video-details">
+                <h2 id="videoTitle"></h2>
+                <div class="meta-data">
+                    <span id="duration"></span>
+                    <span id="views"></span>
+                </div>
+            </div>
+        </div>
+
+        <div id="contentContainer">
             
-            <section class="input-section">
-                <h2>Paste any video URL (YouTube, TikTok, Instagram…)</h2>
-                <div class="input-group">
-                    <input type="text" id="video-url-input" placeholder="https://www.youtube.com/watch?v=... অথবা যেকোনো সোশ্যাল ভিডিও লিংক">
-                    <button class="generate-btn" id="generate-btn">Generate Download Links</button>
-                </div>
-            </section>
+            <div id="videoTab" class="tab-content active">
+                <p id="videoWarning" style="color: var(--danger-color); display: none;"></p>
+                <ul class="format-list" id="videoFormatsList">
+                    </ul>
+            </div>
 
-            <section class="preview-section" id="preview-section">
-                <div class="initial-preview" id="initial-preview">
-                    <i class="fas fa-film video-icon"></i>
-                    <p>Video Preview goes here</p>
-                </div>
+            <div id="audioTab" class="tab-content">
+                <p id="audioWarning" style="color: var(--danger-color); display: none;"></p>
+                <ul class="format-list" id="audioFormatsList">
+                    </ul>
+            </div>
 
-                <div class="loaded-preview" id="loaded-preview">
-                    <div class="thumbnail-container">
-                        <img id="video-thumbnail" src="" alt="Video Thumbnail">
+            <div id="thumbnailTab" class="tab-content">
+                <ul class="thumbnail-list" id="thumbnailList">
+                    </ul>
+            </div>
+
+            <div id="settingsTab" class="tab-content">
+                
+                <div class="settings-section">
+                    <h4>Appearance</h4>
+                    <div class="setting-toggle">
+                        <span>Dark Mode</span>
+                        <input type="checkbox" id="darkModeToggle">
                     </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h4>Backend URL (YouTube)</h4>
+                    <div class="setting-input">
+                        <label for="backendUrlInput">Base URL:</label>
+                        <input type="text" id="backendUrlInput">
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h4>RapidAPI Keys (Social Media)</h4>
+                    <ul class="api-list" id="apiKeysList">
+                        </ul>
                     
-                    <div class="video-details">
-                        <div class="video-info">
-                            <h3 id="video-title"></h3>
-                            <div id="video-meta"></div>
-                        </div>
+                    <div class="api-input-group">
+                        <input type="text" id="newApiKeyInput" placeholder="নতুন RapidAPI Key লিখুন">
+                        <button id="addApiKeyButton" class="download-btn add-api-btn">API Key যুক্ত করুন</button>
                     </div>
                 </div>
-            </section>
+                
+            </div>
+        </div>
 
-            <section class="format-selection">
-                <button class="format-btn active" data-format="mp4" data-type="video">.mp4</button>
-                <button class="format-btn" data-format="webm" data-type="video">.webm</button>
-                <button class="format-btn" data-format="mp3" data-type="audio">.mp3</button>
-                <button class="format-btn" data-format="thumbnail" data-type="image">Thumb Download</button>
-            </section>
-            
-            <section class="download-options-container" id="download-options-container"></section>
-            
-        </main>
-
-        <footer class="footer">
-            <p>Powered by Mujahidul hasan</p>
-        </footer>
-    </div>
-    
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <h3>Menu</h3>
-            <span id="close-sidebar"><i class="fas fa-times"></i></span>
-        </div>
-        
-        <div class="sidebar-item">
-            <span><i class="fas fa-moon"></i> Day / Night Mode</span>
-            <label class="switch">
-                <input type="checkbox" id="dark-mode-toggle">
-                <span class="slider"></span>
-            </label>
-        </div>
-        
-        <div class="sidebar-api-input">
-            <h4><i class="fas fa-code"></i> Social API Keys (RapidAPI)</h4>
-            <div class="api-input-group">
-                <textarea id="sidebar-api-key-input" placeholder="Enter one or multiple RapidAPI keys (each on new line or comma-separated)..."></textarea>
-            </div>
-            <div style="margin-top:8px;display:flex;gap:8px">
-                <button id="save-api-btn" class="generate-btn" style="flex:1;padding:8px;font-size:13px">Save Keys</button>
-                <button id="clear-api-btn" class="generate-btn" style="flex:1;padding:8px;font-size:13px;background:#ff6b6b">Clear</button>
-            </div>
-            <div id="api-note" style="margin-top:8px;font-size:12px;color:var(--text-medium)">
-                Keys আপনার ব্রাউজারের localStorage এ সেভ হবে। কখনো public এ শেয়ার করবেন না।
-            </div>
-        </div>
-        
-        <div class="sidebar-api-input" style="margin-top:16px">
-            <h4><i class="fab fa-youtube"></i> YouTube Backend URL</h4>
-            <p style="font-size:12px;color:var(--text-medium);margin-bottom:6px">
-                Render এ deploy করা backend এর URL দিন, যেমন:<br>
-                <code style="font-size:11px">https://your-app.onrender.com/yt/info</code>
-            </p>
-            <input type="text" id="yt-backend-input" placeholder="https://your-app.onrender.com/yt/info">
-            <div style="margin-top:8px;display:flex;gap:8px">
-                <button id="save-yt-btn" class="generate-btn" style="flex:1;padding:8px;font-size:13px">Save</button>
-                <button id="clear-yt-btn" class="generate-btn" style="flex:1;padding:8px;font-size:13px;background:#ff6b6b">Clear</button>
-            </div>
-        </div>
-        
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const generateBtn = document.getElementById('generate-btn');
-            const formatBtns = document.querySelectorAll('.format-btn');
-            const initialPreview = document.getElementById('initial-preview');
-            const loadedPreview = document.getElementById('loaded-preview');
-            const previewSection = document.getElementById('preview-section');
-            const videoTitle = document.getElementById('video-title');
-            const videoMetaContainer = document.getElementById('video-meta');
-            const videoThumbnail = document.getElementById('video-thumbnail');
-            const videoUrlInput = document.getElementById('video-url-input');
-            const downloadOptionsContainer = document.getElementById('download-options-container');
-            const sidebar = document.getElementById('sidebar');
-            const menuToggle = document.getElementById('menu-toggle');
-            const closeSidebar = document.getElementById('close-sidebar');
-            const darkModeToggle = document.getElementById('dark-mode-toggle');
-            const sidebarApiKeyInput = document.getElementById('sidebar-api-key-input');
-            const body = document.body;
-            const saveApiBtn = document.getElementById('save-api-btn');
-            const clearApiBtn = document.getElementById('clear-api-btn');
-            const ytBackendInput = document.getElementById('yt-backend-input');
-            const saveYtBtn = document.getElementById('save-yt-btn');
-            const clearYtBtn = document.getElementById('clear-yt-btn');
+        /* --- JavaScript Logic (script.js content) --- */
+        
+        // --- Configuration & State ---
+        const YT_BACKEND_ENDPOINT = "/yt/info?url=";
+        const DEFAULT_BACKEND_URL = "https://ytbackend-ubko.onrender.com";
+        const RAPID_API_URL = "https://social-media-downloader-api.p.rapidapi.com/v1/download"; // Placeholder for Social API
+        
+        let currentBackendUrl = localStorage.getItem('backendUrl') || DEFAULT_BACKEND_URL;
+        let rapidApiKeys = JSON.parse(localStorage.getItem('rapidApiKeys')) || [];
+        let currentApiKeyIndex = 0;
 
-            const API_HOST = "social-download-all-in-one.p.rapidapi.com";
-            const API_URL = "https://" + API_HOST + "/v1/social/autolink";
-            const STORAGE_KEYS = "social_downloader_rapidapi_keys";
-            const STORAGE_YT_BACKEND = "yt_backend_url";
+        // --- DOM Elements ---
+        const urlInput = document.getElementById('urlInput');
+        const fetchButton = document.getElementById('fetchButton');
+        const statusMessage = document.getElementById('statusMessage');
+        const videoInfo = document.getElementById('videoInfo');
+        const tabsContainer = document.getElementById('tabsContainer');
+        const videoTitle = document.getElementById('videoTitle');
+        const durationSpan = document.getElementById('duration');
+        const viewsSpan = document.getElementById('views');
+        const thumbnailImg = document.getElementById('thumbnail');
+        const videoFormatsList = document.getElementById('videoFormatsList');
+        const audioFormatsList = document.getElementById('audioFormatsList');
+        const thumbnailList = document.getElementById('thumbnailList');
+        const videoWarning = document.getElementById('videoWarning');
+        const audioWarning = document.getElementById('audioWarning');
+        const backendUrlInput = document.getElementById('backendUrlInput');
+        const newApiKeyInput = document.getElementById('newApiKeyInput');
+        const addApiKeyButton = document.getElementById('addApiKeyButton');
+        const apiKeysList = document.getElementById('apiKeysList');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        
+        // --- Utility Functions ---
+        
+        function isYouTubeUrl(url) {
+            return url.includes('youtube.com') || url.includes('youtu.be');
+        }
 
-            let CURRENT_MODE = null; // "youtube" | "social"
-            let LAST_YT_DATA = null;
-            let LAST_SOCIAL_DATA = null;
-
-            function formatDuration(seconds) {
-                if (!seconds) return "N/A";
-                seconds = parseInt(seconds, 10);
-                if (isNaN(seconds) || seconds < 0) return "N/A";
-                const h = Math.floor(seconds / 3600);
-                const m = Math.floor((seconds % 3600) / 60);
-                const s = Math.floor(seconds % 60);
-                const pad = n => n.toString().padStart(2, "0");
-                if (h > 0) return `${pad(h)}:${pad(m)}:${pad(s)}`;
-                return `${pad(m)}:${pad(s)}`;
+        function showStatus(message, type = 'loading', duration = 3000) {
+            statusMessage.textContent = message;
+            statusMessage.className = `status-message status-${type}`;
+            statusMessage.style.display = 'block';
+            
+            if (type !== 'loading') {
+                setTimeout(() => {
+                    statusMessage.style.display = 'none';
+                }, duration);
             }
+        }
 
-            function formatFileSize(bytes) {
-                if (!bytes || isNaN(bytes)) return "";
-                const k = 1024;
-                const sizes = ["B", "KB", "MB", "GB"];
-                const i = Math.floor(Math.log(bytes) / Math.log(k));
-                return (bytes / Math.pow(k, i)).toFixed(2) + " " + sizes[i];
+        function hideStatus() {
+            statusMessage.style.display = 'none';
+        }
+
+        function resetUI() {
+            videoInfo.style.display = 'none';
+            tabsContainer.style.display = 'none';
+            videoFormatsList.innerHTML = '';
+            audioFormatsList.innerHTML = '';
+            thumbnailList.innerHTML = '';
+            videoWarning.style.display = 'none';
+            audioWarning.style.display = 'none';
+        }
+
+        // --- API Handling & Rotation Logic ---
+        
+        async function fetchYouTubeInfo(url) {
+            const api_url = `${currentBackendUrl}${YT_BACKEND_ENDPOINT}${encodeURIComponent(url)}`;
+            
+            showStatus("YouTube তথ্য ফেচ করা হচ্ছে...");
+            
+            try {
+                const response = await fetch(api_url);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    hideStatus();
+                    return { success: true, data: data };
+                } else {
+                    // Handle specific backend errors
+                    return { success: false, message: data.detail || "ব্যাকএন্ড ত্রুটি।" };
+                }
+            } catch (error) {
+                console.error("YouTube Fetch Error:", error);
+                return { success: false, message: "ব্যাকএন্ডের সাথে সংযোগ ব্যর্থ হয়েছে। সেটিংস চেক করুন।" };
             }
+        }
 
-            function safe(u) {
-                return String(u || "").replace(/"/g, "&quot;").replace(/'/g, "'");
+        async function fetchSocialMediaInfo(url) {
+            if (rapidApiKeys.length === 0) {
+                return { success: false, message: "সোশ্যাল মিডিয়ার জন্য কোনো RapidAPI কী যুক্ত নেই।" };
             }
-
-            function isYouTubeUrl(u) {
-                if (!u) return false;
+            
+            for (let i = 0; i < rapidApiKeys.length; i++) {
+                currentApiKeyIndex = (currentApiKeyIndex + 1) % rapidApiKeys.length; // Rotate key index
+                const apiKey = rapidApiKeys[currentApiKeyIndex];
+                
+                showStatus(`সোশ্যাল মিডিয়া তথ্য ফেচ করা হচ্ছে (API Key ${currentApiKeyIndex + 1}/${rapidApiKeys.length})...`);
+                
                 try {
-                    const url = new URL(u);
-                    const host = url.hostname.toLowerCase();
-                    if (host.includes("youtube.com") || host.includes("youtu.be")) return true;
-                } catch (e) {
-                    if (u.includes("youtube.com") || u.includes("youtu.be")) return true;
-                }
-                return false;
-            }
-
-            function parseKeysFromInput(text) {
-                return text
-                    .split(/[\n,]+/)
-                    .map(s => s.trim())
-                    .filter(Boolean);
-            }
-
-            function loadSavedKeys() {
-                try {
-                    const raw = localStorage.getItem(STORAGE_KEYS);
-                    if (!raw) return [];
-                    const arr = JSON.parse(raw);
-                    if (Array.isArray(arr)) return arr.filter(Boolean);
-                    return [];
-                } catch (e) {
-                    return [];
-                }
-            }
-
-            function saveKeys(keysArr) {
-                localStorage.setItem(STORAGE_KEYS, JSON.stringify(keysArr));
-            }
-
-            async function callSocialApiWithKeys(targetUrl) {
-                const keys = loadSavedKeys();
-                if (!keys.length) {
-                    throw new Error("No RapidAPI keys saved. Go to Menu → API section and save at least one key.");
-                }
-                let lastError = null;
-                for (let i = 0; i < keys.length; i++) {
-                    const key = keys[i];
-                    try {
-                        const resp = await fetch(API_URL, {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                                "X-RapidAPI-Host": API_HOST,
-                                "X-RapidAPI-Key": key
-                            },
-                            body: JSON.stringify({ url: targetUrl })
-                        });
-                        const text = await resp.text();
-                        let data = null;
-                        try { data = JSON.parse(text); } catch (e) { data = null; }
-
-                        if (!resp.ok) {
-                            if ([401, 403, 429].includes(resp.status)) {
-                                console.warn("Key", i+1, "failed with status", resp.status);
-                                lastError = new Error("Key "+(i+1)+" failed: HTTP "+resp.status);
-                                continue;
-                            }
-                            throw new Error("Social API error: HTTP " + resp.status);
-                        }
-
-                        if (data && data.error) {
-                            const msg = data.message || data.reason || "Unknown error";
-                            console.warn("Key", i+1, "API error payload:", msg);
-                            if (/quota|limit|key|unauthorized|forbidden/i.test(msg)) {
-                                lastError = new Error("Key "+(i+1)+" says: "+msg);
-                                continue;
-                            }
-                            throw new Error("API error: " + msg);
-                        }
-
-                        return data;
-
-                    } catch (e) {
-                        console.error("Key", i+1, "threw error:", e);
-                        lastError = e;
+                    const response = await fetch(RAPID_API_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'x-rapidapi-host': 'social-media-downloader-api.p.rapidapi.com',
+                            'x-rapidapi-key': apiKey
+                        },
+                        body: JSON.stringify({ url: url })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        hideStatus();
+                        // Assuming the RapidAPI response structure is similar to the YouTube one for simplicity in UI rendering
+                        // NOTE: Real implementation needs custom parsing here!
+                        return { success: true, data: data }; 
+                    } else if (response.status === 429 || response.status === 403) {
+                        // Rate limit or Forbidden (try next key)
+                        console.warn(`API Key ${apiKey} failed. Trying next key...`);
+                        showStatus(`API Key ত্রুটি। পরবর্তী কী চেষ্টা করা হচ্ছে...`, 'error', 2000);
                         continue;
-                    }
-                }
-                throw lastError || new Error("All RapidAPI keys failed.");
-            }
-
-            async function callYouTubeBackend(targetUrl) {
-                const backend = localStorage.getItem(STORAGE_YT_BACKEND) || ytBackendInput.value.trim();
-                if (!backend) {
-                    throw new Error("YouTube backend URL not set. Go to Menu → YouTube Backend URL.");
-                }
-                const url = backend.includes("?") 
-                    ? backend + "&url=" + encodeURIComponent(targetUrl)
-                    : backend + "?url=" + encodeURIComponent(targetUrl);
-                const resp = await fetch(url);
-                if (!resp.ok) {
-                    const txt = await resp.text();
-                    console.error("YT backend error", resp.status, txt);
-                    throw new Error("YouTube backend error: HTTP " + resp.status);
-                }
-                return await resp.json();
-            }
-
-            function parseQualityValue(q) {
-                if (!q) return 0;
-                const m = String(q).match(/(\d{2,4})p/i);
-                if (m) return parseInt(m[1], 10);
-                const kb = String(q).match(/(\d+)\s*kbps/i);
-                if (kb) return parseInt(kb[1], 10);
-                return 0;
-            }
-
-            menuToggle.addEventListener("click", () => sidebar.classList.add("open"));
-            closeSidebar.addEventListener("click", () => sidebar.classList.remove("open"));
-
-            darkModeToggle.addEventListener("change", () => {
-                body.classList.toggle("dark-mode", darkModeToggle.checked);
-            });
-
-            const existingKeys = loadSavedKeys();
-            if (existingKeys.length) {
-                sidebarApiKeyInput.value = existingKeys.join("\n");
-            }
-
-            saveApiBtn.addEventListener("click", () => {
-                const raw = sidebarApiKeyInput.value.trim();
-                const keys = parseKeysFromInput(raw);
-                if (!keys.length) {
-                    alert("Please paste at least one RapidAPI key.");
-                    return;
-                }
-                saveKeys(keys);
-                alert("Saved " + keys.length + " key(s) locally.");
-            });
-
-            clearApiBtn.addEventListener("click", () => {
-                if (confirm("Clear all saved API keys?")) {
-                    localStorage.removeItem(STORAGE_KEYS);
-                    sidebarApiKeyInput.value = "";
-                    alert("All API keys cleared.");
-                }
-            });
-
-            const savedBackend = localStorage.getItem(STORAGE_YT_BACKEND);
-            if (savedBackend) ytBackendInput.value = savedBackend;
-
-            saveYtBtn.addEventListener("click", () => {
-                const v = ytBackendInput.value.trim();
-                if (!v) {
-                    alert("Paste your YouTube backend URL (Render).");
-                    return;
-                }
-                localStorage.setItem(STORAGE_YT_BACKEND, v);
-                alert("YouTube backend URL saved.");
-            });
-
-            clearYtBtn.addEventListener("click", () => {
-                if (confirm("Clear YouTube backend URL?")) {
-                    localStorage.removeItem(STORAGE_YT_BACKEND);
-                    ytBackendInput.value = "";
-                    alert("Cleared.");
-                }
-            });
-
-            generateBtn.addEventListener("click", async () => {
-                const rawUrl = videoUrlInput.value.trim();
-                if (!rawUrl) {
-                    alert("Please paste any video URL.");
-                    return;
-                }
-
-                generateBtn.textContent = "Fetching...";
-                generateBtn.disabled = true;
-                downloadOptionsContainer.style.display = "none";
-
-                try {
-                    let title = "Untitled";
-                    let durationSeconds = null;
-                    let thumbnail = "";
-                    let sourceLabel = "";
-                    if (isYouTubeUrl(rawUrl)) {
-                        CURRENT_MODE = "youtube";
-                        const yt = await callYouTubeBackend(rawUrl);
-                        LAST_YT_DATA = yt;
-                        LAST_SOCIAL_DATA = null;
-
-                        title = yt.title || "Untitled";
-                        durationSeconds = yt.duration || null;
-                        thumbnail = yt.thumbnail || "";
-                        sourceLabel = "YouTube";
-
                     } else {
-                        CURRENT_MODE = "social";
-                        const social = await callSocialApiWithKeys(rawUrl);
-                        LAST_SOCIAL_DATA = social;
-                        LAST_YT_DATA = null;
-
-                        title = social.title || "Untitled";
-                        thumbnail = social.thumbnail || "";
-                        let seconds = null;
-                        if (typeof social.duration === "number") {
-                            seconds = social.duration > 10000 ? Math.round(social.duration / 1000) : social.duration;
-                        }
-                        durationSeconds = seconds;
-                        const src = social.source || "";
-                        sourceLabel = src ? src.toUpperCase() : "";
+                        return { success: false, message: data.message || "সোশ্যাল মিডিয়া ডাউনলোডে ত্রুটি।" };
                     }
+                    
+                } catch (error) {
+                    console.error("RapidAPI Fetch Error:", error);
+                    showStatus(`সংযোগ ত্রুটি। পরবর্তী কী চেষ্টা করা হচ্ছে...`, 'error', 2000);
+                    continue;
+                }
+            }
+            
+            return { success: false, message: "সমস্ত RapidAPI কী ব্যর্থ হয়েছে বা কোটা শেষ।" };
+        }
 
-                    videoTitle.textContent = title;
-                    const formattedDuration = formatDuration(durationSeconds);
+        // --- Main Fetch Handler ---
+        
+        async function handleFetch() {
+            resetUI();
+            const url = urlInput.value.trim();
+            if (!url) {
+                showStatus("অনুগ্রহ করে একটি বৈধ লিঙ্ক লিখুন।", 'error', 3000);
+                return;
+            }
 
-                    videoMetaContainer.innerHTML = `
-                        <p><i class="fas fa-clock"></i> ${formattedDuration}</p>
-                        ${sourceLabel ? `<p><i class="fas fa-globe"></i> ${sourceLabel}</p>` : ""}
+            fetchButton.disabled = true;
+            
+            let result;
+            
+            if (isYouTubeUrl(url)) {
+                result = await fetchYouTubeInfo(url);
+            } else {
+                result = await fetchSocialMediaInfo(url);
+            }
+
+            fetchButton.disabled = false;
+            
+            if (result.success) {
+                renderVideoInfo(result.data);
+                renderFormats(result.data);
+                tabsContainer.style.display = 'flex';
+                videoInfo.style.display = 'block';
+            } else {
+                showStatus(`❌ ত্রুটি: ${result.message}`, 'error', 5000);
+            }
+        }
+
+        // --- Rendering Functions ---
+
+        function renderVideoInfo(data) {
+            videoTitle.textContent = data.title || "ভিডিওর শিরোনাম পাওয়া যায়নি";
+            durationSpan.textContent = `Duration: ${data.duration || 'N/A'}`;
+            viewsSpan.textContent = `Views: ${data.views || 'N/A'}`;
+            
+            // Set highest resolution thumbnail
+            if (data.thumbnails && data.thumbnails.length > 0) {
+                 // Thumbnails are already sorted descending by resolution in the backend
+                thumbnailImg.src = data.thumbnails[0].url;
+            } else {
+                thumbnailImg.src = ''; // Clear image if none found
+            }
+        }
+
+        function renderFormats(data) {
+            // 1. Video Formats Tab
+            if (data.video_formats && data.video_formats.length > 0) {
+                data.video_formats.forEach(format => {
+                    const li = document.createElement('li');
+                    li.className = 'format-item';
+                    li.innerHTML = `
+                        <div class="format-info">
+                            <span class="resolution">${format.resolution}</span>
+                            <span class="ext">${format.ext.toUpperCase()}</span> 
+                        </div>
+                        <a href="${format.url}" class="download-btn icon-download" target="_blank" download>
+                            Download
+                        </a>
                     `;
+                    videoFormatsList.appendChild(li);
+                });
+                videoWarning.style.display = 'none';
+            } else {
+                videoWarning.textContent = "ভিডিও/অডিও সম্মিলিত MP4 ফরম্যাট পাওয়া যায়নি।";
+                videoWarning.style.display = 'block';
+            }
 
-                    videoThumbnail.src = thumbnail || "";
-                    previewSection.classList.add("loaded");
-                    initialPreview.style.display = "none";
-                    loadedPreview.style.display = "block";
-
-                    formatBtns.forEach(b => b.classList.remove("active"));
-                    formatBtns[0].classList.add("active");
-
-                    if (CURRENT_MODE === "youtube") {
-                        renderYouTubeOptions("mp4");
-                    } else {
-                        renderSocialOptions("mp4");
-                    }
-
-                } catch (e) {
-                    console.error(e);
-                    alert("Error: " + e.message);
-                } finally {
-                    generateBtn.textContent = "Generate Download Links";
-                    generateBtn.disabled = false;
-                }
+            // 2. Audio Formats Tab
+            if (data.audio_formats && data.audio_formats.length > 0) {
+                data.audio_formats.forEach(format => {
+                    const li = document.createElement('li');
+                    li.className = 'format-item';
+                    li.innerHTML = `
+                        <div class="format-info">
+                            <span class="quality">MP3/M4A - ${format.quality}</span>
+                            <span class="ext">${format.ext.toUpperCase()}</span>
+                        </div>
+                        <a href="${format.url}" class="download-btn icon-download" target="_blank" download>
+                            Download
+                        </a>
+                    `;
+                    audioFormatsList.appendChild(li);
+                });
+                audioWarning.style.display = 'none';
+            } else {
+                audioWarning.textContent = "Audio-only stream not provided directly by YouTube (only video+audio stream available).";
+                audioWarning.style.display = 'block';
+            }
+            
+            // 3. Thumbnail Tab
+            if (data.thumbnails && data.thumbnails.length > 0) {
+                data.thumbnails.forEach(thumb => {
+                    const li = document.createElement('li');
+                    li.className = 'thumbnail-item';
+                    li.innerHTML = `
+                        <img src="${thumb.url}" alt="Thumbnail ${thumb.resolution}">
+                        <div class="thumbnail-info">
+                            <span class="resolution-badge">${thumb.resolution}</span>
+                            <a href="${thumb.url}" class="download-btn icon-download" target="_blank" download="thumbnail-${thumb.resolution}.jpg">
+                                Download
+                            </a>
+                        </div>
+                    `;
+                    thumbnailList.appendChild(li);
+                });
+            } else {
+                 thumbnailList.innerHTML = `<p style="text-align: center;">কোনো থাম্বনেইল পাওয়া যায়নি।</p>`;
+            }
+        }
+        
+        // --- Settings Logic ---
+        
+        function updateApiKeysList() {
+            apiKeysList.innerHTML = '';
+            if (rapidApiKeys.length === 0) {
+                apiKeysList.innerHTML = `<p style="text-align: center; color: var(--danger-color);">কোনো RapidAPI কী যুক্ত করা হয়নি।</p>`;
+                return;
+            }
+            
+            rapidApiKeys.forEach((key, index) => {
+                const li = document.createElement('li');
+                li.className = 'api-item';
+                li.innerHTML = `
+                    <span class="api-key-text">Key ${index + 1}: ${key.substring(0, 4)}...${key.substring(key.length - 4)}</span>
+                    <button class="remove-btn icon-remove" data-index="${index}">Remove</button>
+                `;
+                apiKeysList.appendChild(li);
             });
-
-            formatBtns.forEach(btn => {
-                btn.addEventListener("click", () => {
-                    if (!LAST_YT_DATA && !LAST_SOCIAL_DATA) return;
-                    formatBtns.forEach(b => b.classList.remove("active"));
-                    btn.classList.add("active");
-                    const format = btn.getAttribute("data-format");
-                    const type = btn.getAttribute("data-type");
-                    if (CURRENT_MODE === "youtube") {
-                        renderYouTubeOptions(format, type);
-                    } else {
-                        renderSocialOptions(format, type);
-                    }
+            
+            document.querySelectorAll('.remove-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    rapidApiKeys.splice(index, 1);
+                    localStorage.setItem('rapidApiKeys', JSON.stringify(rapidApiKeys));
+                    updateApiKeysList();
+                    showStatus("API Key সফলভাবে মুছে ফেলা হয়েছে।", 'success', 2000);
                 });
             });
+        }
+        
+        function initializeSettings() {
+            // Load Backend URL
+            backendUrlInput.value = currentBackendUrl;
+            
+            // Load Dark Mode
+            const isDarkMode = localStorage.getItem('darkMode') === 'true';
+            document.body.classList.toggle('dark-mode', isDarkMode);
+            darkModeToggle.checked = isDarkMode;
+            
+            updateApiKeysList();
+        }
 
-            function renderSocialOptions(format, type) {
-                const data = LAST_SOCIAL_DATA;
-                downloadOptionsContainer.innerHTML = "";
-                downloadOptionsContainer.style.display = "none";
-                if (!data) return;
-
-                const medias = Array.isArray(data.medias) ? data.medias : [];
-                let headerHtml = "";
-                if (format === "mp4") headerHtml = '<h3><i class="fas fa-video"></i> MP4 Download Options</h3>';
-                else if (format === "webm") headerHtml = '<h3><i class="fas fa-video"></i> WebM Download Options</h3>';
-                else if (format === "mp3") headerHtml = '<h3><i class="fas fa-music"></i> Audio Download Options</h3>';
-                else if (format === "thumbnail") headerHtml = '<h3><i class="fas fa-image"></i> Thumbnail Download Options</h3>';
-
-                let list = [];
-
-                if (format === "mp4") {
-                    list = medias.filter(m => {
-                        const ext = (m.extension || "").toLowerCase();
-                        return (m.type === "video" || !m.type) && ext === "mp4";
-                    });
-                    list.sort((a, b) => parseQualityValue(a.quality) - parseQualityValue(b.quality));
-                } else if (format === "webm") {
-                    list = medias.filter(m => {
-                        const ext = (m.extension || "").toLowerCase();
-                        return (m.type === "video" || !m.type) && ext === "webm";
-                    });
-                    list.sort((a, b) => parseQualityValue(a.quality) - parseQualityValue(b.quality));
-                } else if (format === "mp3") {
-                    list = medias.filter(m => {
-                        const ext = (m.extension || "").toLowerCase();
-                        const t   = (m.type || "").toLowerCase();
-                        const q   = (m.quality || "").toLowerCase();
-                        return t === "audio" || ext === "mp3" || q.includes("audio");
-                    });
-                    list.sort((a, b) => parseQualityValue(a.quality) - parseQualityValue(b.quality));
-                }
-
-                let html = headerHtml;
-
-                if (format === "thumbnail") {
-                    const thumbUrl = data.thumbnail || (data.thumbnails && data.thumbnails[0] && data.thumbnails[0].url) || "";
-                    if (thumbUrl) {
-                        html += `
-                            <div class="download-item">
-                                <div class="item-details">
-                                    <span class="format-tag">IMG</span>
-                                    <span style="font-weight:700">Default Thumbnail</span>
-                                </div>
-                                <div style="display:flex;gap:8px">
-                                    <a class="download-btn-small" href="${safe(thumbUrl)}" download target="_blank" rel="noreferrer">
-                                        <i class="fas fa-download"></i> Download
-                                    </a>
-                                </div>
-                            </div>
-                        `;
-                    } else {
-                        html += '<div style="color:var(--text-medium);padding:10px 0;">No thumbnail found for this link.</div>';
-                    }
-                } else {
-                    if (list.length) {
-                        const seen = new Set();
-                        list.forEach(m => {
-                            const u = m.url;
-                            const q = m.quality || "";
-                            const key = u + "|" + q;
-                            if (!u || seen.has(key)) return;
-                            seen.add(key);
-                            const ext = (m.extension || "").toUpperCase();
-                            const qText = m.quality || "";
-                            const sizeText = m.data_size ? formatFileSize(m.data_size) : "";
-
-                            html += `
-                                <div class="download-item">
-                                    <div class="item-details">
-                                        <span class="format-tag">${ext || format.toUpperCase()}</span>
-                                        <span style="margin-right:10px;font-weight:700">${qText || "Default"}</span>
-                                        <span class="size" style="color:${sizeText ? "var(--text-dark)" : "var(--text-medium)"}">
-                                            ${sizeText ? sizeText : ""}
-                                        </span>
-                                    </div>
-                                    <div style="display:flex;gap:8px;align-items:center">
-                                        <a class="download-btn-small" href="${safe(u)}" target="_blank" rel="noreferrer">
-                                            <i class="fas fa-download"></i> Download
-                                        </a>
-                                    </div>
-                                </div>
-                            `;
-                        });
-                    } else {
-                        if (format === "mp3") {
-                            html += '<div style="color:var(--text-medium);padding:10px 0;">No audio formats found for this link.</div>';
-                        } else {
-                            html += '<div style="color:var(--text-medium);padding:10px 0;">No ' + format.toUpperCase() + ' formats found for this link.</div>';
-                        }
-                    }
-                }
-
-                html += `
-                    <div style="margin-top:12px;text-align:center;">
-                        <button id="showRawBtn" class="download-btn-small" style="background:transparent;color:var(--text-dark);border:1px solid var(--card-border-grey)">
-                            <i class="fas fa-code"></i> Show raw JSON (console)
-                        </button>
-                    </div>
-                `;
-
-                downloadOptionsContainer.innerHTML = html;
-                downloadOptionsContainer.style.display = "block";
-
-                const rawBtn = document.getElementById("showRawBtn");
-                if (rawBtn) {
-                    rawBtn.addEventListener("click", () => {
-                        console.log("RAW SOCIAL API RESPONSE:", data);
-                        alert("Raw JSON logged to console. DevTools → Console এ গিয়ে দেখুন।");
-                    });
-                }
-
-                const items = downloadOptionsContainer.querySelectorAll(".download-item");
-                if (items.length > 0) {
-                    items[items.length - 1].style.borderBottom = "none";
-                }
-            }
-
-            function renderYouTubeOptions(format, type) {
-                const yt = LAST_YT_DATA;
-                downloadOptionsContainer.innerHTML = "";
-                downloadOptionsContainer.style.display = "none";
-                if (!yt) return;
-
-                const videoFormats = Array.isArray(yt.formats) ? yt.formats : [];
-                const audioFormats = Array.isArray(yt.audios) ? yt.audios : [];
-
-                let headerHtml = "";
-                if (format === "mp4") headerHtml = '<h3><i class="fab fa-youtube"></i> YouTube MP4 (Video+Audio)</h3>';
-                else if (format === "webm") headerHtml = '<h3><i class="fab fa-youtube"></i> YouTube WebM (Video+Audio)</h3>';
-                else if (format === "mp3") headerHtml = '<h3><i class="fas fa-music"></i> YouTube Audio (Sound only)</h3>';
-                else if (format === "thumbnail") headerHtml = '<h3><i class="fas fa-image"></i> Thumbnail Download Options</h3>';
-
-                let html = headerHtml;
-
-                if (format === "thumbnail") {
-                    const thumbUrl = yt.thumbnail || "";
-                    if (thumbUrl) {
-                        html += `
-                            <div class="download-item">
-                                <div class="item-details">
-                                    <span class="format-tag">IMG</span>
-                                    <span style="font-weight:700">Default Thumbnail</span>
-                                </div>
-                                <div style="display:flex;gap:8px">
-                                    <a class="download-btn-small" href="${safe(thumbUrl)}" download target="_blank" rel="noreferrer">
-                                        <i class="fas fa-download"></i> Download
-                                    </a>
-                                </div>
-                            </div>
-                        `;
-                    } else {
-                        html += '<div style="color:var(--text-medium);padding:10px 0;">No thumbnail found.</div>';
-                    }
-                } else if (format === "mp3") {
-                    if (audioFormats.length) {
-                        const sorted = audioFormats.slice().sort((a, b) => (a.abr || 0) - (b.abr || 0));
-                        sorted.forEach(f => {
-                            const url = f.url;
-                            if (!url) return;
-                            const ext = (f.ext || "audio").toUpperCase();
-                            const q = f.abr ? (f.abr + " kbps") : (f.format_note || "Audio");
-                            const size = f.filesize ? formatFileSize(f.filesize) : "";
-                            html += `
-                                <div class="download-item">
-                                    <div class="item-details">
-                                        <span class="format-tag">${ext}</span>
-                                        <span style="margin-right:10px;font-weight:700">${q}</span>
-                                        <span class="size" style="color:${size ? "var(--text-dark)" : "var(--text-medium)"}">
-                                            ${size ? size : ""}
-                                        </span>
-                                    </div>
-                                    <div style="display:flex;gap:8px;align-items:center">
-                                        <a class="download-btn-small" href="${safe(url)}" target="_blank" rel="noreferrer">
-                                            <i class="fas fa-download"></i> Download
-                                        </a>
-                                    </div>
-                                </div>
-                            `;
-                        });
-                    } else {
-                        html += '<div style="color:var(--text-medium);padding:10px 0;">No audio-only formats found.</div>';
-                    }
-                } else {
-                    const targetExt = format.toLowerCase();
-                    const list = videoFormats.filter(f => {
-                        const ext = (f.ext || "").toLowerCase();
-                        const hasVideo = f.vcodec && f.vcodec !== "none";
-                        const hasAudio = f.acodec && f.acodec !== "none";
-                        return ext === targetExt && hasVideo && hasAudio;
-                    }).sort((a, b) => (a.height || 0) - (b.height || 0));
-
-                    if (list.length) {
-                        list.forEach(f => {
-                            const url = f.url;
-                            if (!url) return;
-                            const ext = (f.ext || targetExt).toUpperCase();
-                            const q = f.height ? (f.height + "p") : (f.format_note || "Video");
-                            const size = f.filesize ? formatFileSize(f.filesize) : "";
-                            html += `
-                                <div class="download-item">
-                                    <div class="item-details">
-                                        <span class="format-tag">${ext}</span>
-                                        <span style="margin-right:10px;font-weight:700">${q}</span>
-                                        <span class="size" style="color:${size ? "var(--text-dark)" : "var(--text-medium)"}">
-                                            ${size ? size : ""}
-                                        </span>
-                                    </div>
-                                    <div style="display:flex;gap:8px;align-items:center">
-                                        <a class="download-btn-small" href="${safe(url)}" target="_blank" rel="noreferrer">
-                                            <i class="fas fa-download"></i> Download
-                                        </a>
-                                    </div>
-                                </div>
-                            `;
-                        });
-                    } else {
-                        html += '<div style="color:var(--text-medium);padding:10px 0;">No '+format.toUpperCase()+' progressive (video+audio) formats found. Try MP3 tab for audio-only.</div>';
-                    }
-                }
-
-                html += `
-                    <div style="margin-top:12px;text-align:center;">
-                        <button id="showYtRawBtn" class="download-btn-small" style="background:transparent;color:var(--text-dark);border:1px solid var(--card-border-grey)">
-                            <i class="fas fa-code"></i> Show YT JSON (console)
-                        </button>
-                    </div>
-                `;
-
-                downloadOptionsContainer.innerHTML = html;
-                downloadOptionsContainer.style.display = "block";
-
-                const rawBtn = document.getElementById("showYtRawBtn");
-                if (rawBtn) {
-                    rawBtn.addEventListener("click", () => {
-                        console.log("RAW YT BACKEND RESPONSE:", yt);
-                        alert("YouTube JSON logged to console. DevTools → Console এ গিয়ে দেখুন।");
-                    });
-                }
-
-                const items = downloadOptionsContainer.querySelectorAll(".download-item");
-                if (items.length > 0) {
-                    items[items.length - 1].style.borderBottom = "none";
-                }
-            }
-
-            initialPreview.style.display = "flex";
-            loadedPreview.style.display = "none";
-            videoUrlInput.value = "";
+        // --- Event Listeners ---
+        
+        // Input change to enable/disable button
+        urlInput.addEventListener('input', () => {
+            fetchButton.disabled = urlInput.value.trim().length === 0;
         });
+
+        // Main Fetch Button
+        fetchButton.addEventListener('click', handleFetch);
+
+        // Tab Switching
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', function() {
+                document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                
+                this.classList.add('active');
+                document.getElementById(this.dataset.tab).classList.add('active');
+            });
+        });
+
+        // Dark Mode Toggle
+        darkModeToggle.addEventListener('change', function() {
+            document.body.classList.toggle('dark-mode', this.checked);
+            localStorage.setItem('darkMode', this.checked);
+        });
+
+        // Backend URL Save
+        backendUrlInput.addEventListener('change', function() {
+            currentBackendUrl = this.value.trim();
+            localStorage.setItem('backendUrl', currentBackendUrl);
+            showStatus("Backend URL সংরক্ষণ করা হয়েছে।", 'success', 2000);
+        });
+
+        // Add API Key
+        addApiKeyButton.addEventListener('click', function() {
+            const newKey = newApiKeyInput.value.trim();
+            if (newKey && !rapidApiKeys.includes(newKey)) {
+                rapidApiKeys.push(newKey);
+                localStorage.setItem('rapidApiKeys', JSON.stringify(rapidApiKeys));
+                newApiKeyInput.value = '';
+                updateApiKeysList();
+                showStatus("API Key যুক্ত করা হয়েছে।", 'success', 2000);
+            } else if (rapidApiKeys.includes(newKey)) {
+                showStatus("এই API Key ইতিমধ্যেই যুক্ত আছে।", 'error', 3000);
+            } else {
+                showStatus("একটি বৈধ API Key লিখুন।", 'error', 3000);
+            }
+        });
+
+        // Initialize on Load
+        document.addEventListener('DOMContentLoaded', initializeSettings);
+
     </script>
 </body>
 </html>
