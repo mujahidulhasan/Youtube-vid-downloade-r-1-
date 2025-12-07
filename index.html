@@ -374,7 +374,7 @@
             padding-left: 5px;
         }
         
-        /* --- API Input Section HIDDEN or Removed as it's not needed for scraping --- */
+        /* API Input Section HIDDEN */
         .sidebar-api-input {
             display: none !important; 
         }
@@ -384,7 +384,7 @@
             margin-top: auto; 
             padding-top: 20px;
         }
-        /* --- Dark Mode Switch Styling (আগের কোড) --- */
+        
         .switch {
             position: relative;
             display: inline-block;
@@ -513,20 +513,7 @@
             </label>
         </div>
         
-        <div class="sidebar-api-input" style="display:none;">
-            <h4><i class="fas fa-code"></i> API Add (Private)</h4>
-            <div class="api-input-group">
-                <input type="password" id="sidebar-api-key-input" placeholder="Enter your Social Downloader RapidAPI key..." value="">
-                <i class="fas fa-eye-slash" id="sidebar-api-key-toggle"></i>
-            </div>
-            <div style="margin-top:8px;display:flex;gap:8px">
-                <button id="save-api-btn" class="generate-btn" style="flex:1;padding:8px;font-size:13px">Save Key</button>
-                <button id="clear-api-btn" class="generate-btn" style="flex:1;padding:8px;font-size:13px;background:#ff6b6b">Clear Key</button>
-            </div>
-            <div id="api-note" style="margin-top:8px;font-size:12px;color:var(--text-medium)">
-                API key আপনার ব্রাউজারে লোকালি সেভ হবে। কখনো public-এ শেয়ার করবেন না।
-            </div>
-        </div>
+        <div class="sidebar-api-input"></div> 
         
     </div>
 
@@ -549,29 +536,12 @@
             const body = document.body;
 
             // --- নতুন কনস্ট্যান্ট: আপনার ব্যাকএন্ডের স্ক্র্যাপিং এন্ডপয়েন্ট ---
-            const BACKEND_BASE_URL = "https://ytbackend-ubko.onrender.com"; // আপনার রেন্ডার URL
-            const SCRAPING_ENDPOINT = "/scrape/vidssave"; // Vidssave স্ক্র্যাপিং এন্ডপয়েন্ট
+            // এই URL টি অবশ্যই আপনার Render সার্ভিসের URL হতে হবে।
+            const BACKEND_BASE_URL = "https://ytbackend-ubko.onrender.com"; 
+            const SCRAPING_ENDPOINT = "/scrape/vidssave"; 
             // ---
 
-            // duration formatter (seconds -> HH:MM:SS) - অপরিবর্তিত
-            function formatDuration(seconds) {
-                if (!seconds) return 'N/A';
-                seconds = parseInt(seconds, 10);
-                if (isNaN(seconds) || seconds < 0) return 'N/A';
-
-                const h = Math.floor(seconds / 3600);
-                const m = Math.floor((seconds % 3600) / 60);
-                const s = Math.floor(seconds % 60);
-
-                const pad = (num) => num.toString().padStart(2, '0');
-
-                if (h > 0) {
-                    return `${pad(h)}:${pad(m)}:${pad(s)}`;
-                }
-                return `${pad(m)}:${pad(s)}`;
-            }
-
-            // simple filesize formatter (bytes) - অপরিবর্তিত
+            // Utility Functions (আগের মতো)
             function formatFileSize(bytes) {
                 if (!bytes || isNaN(bytes)) return '';
                 const k = 1024;
@@ -579,17 +549,27 @@
                 const i = Math.floor(Math.log(bytes) / Math.log(k));
                 return (bytes / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i];
             }
-
+            function parseQualityValue(q){
+                if(!q) return 0;
+                const m = String(q).match(/(\d{2,4})p/i);
+                if(m) return parseInt(m[1], 10);
+                const kb = String(q).match(/(\d+)\s*kbps/i);
+                if(kb) return parseInt(kb[1], 10);
+                return 0;
+            }
+            function safe(u){
+                return String(u||'').replace(/"/g,'&quot;').replace(/'/g,"'");
+            }
+            
             // open/close sidebar - অপরিবর্তিত
             menuToggle.addEventListener('click', () => sidebar.classList.add('open'));
             closeSidebar.addEventListener('click', () => sidebar.classList.remove('open'));
 
-            // dark mode toggle - অপরিবর্তিত
+            // Dark Mode
             darkModeToggle.addEventListener('change', () => {
                 body.classList.toggle('dark-mode', darkModeToggle.checked);
                 localStorage.setItem('darkMode', darkModeToggle.checked);
             });
-            // Initial load dark mode
             if(localStorage.getItem('darkMode') === 'true') {
                  body.classList.add('dark-mode');
                  darkModeToggle.checked = true;
@@ -598,7 +578,6 @@
                  darkModeToggle.checked = false;
             }
 
-            // API Key লজিক এখন অপ্রয়োজনীয় তাই এটি রিমুভ করা হলো।
 
             // tab handling (format buttons) - অপরিবর্তিত
             formatBtns.forEach(btn=>{
@@ -624,10 +603,8 @@
                 downloadOptionsContainer.style.display = 'none';
 
                 try {
-                    // আপনার Render ব্যাকএন্ডে POST রিকোয়েস্ট পাঠানো হচ্ছে
                     const fetchUrl = `${BACKEND_BASE_URL}${SCRAPING_ENDPOINT}`;
                     
-                    // POST request-এর মাধ্যমে URL পাঠানো হচ্ছে
                     const resp = await fetch(fetchUrl, {
                         method: 'POST',
                         headers: {
@@ -642,7 +619,7 @@
 
                     if(!resp.ok){
                         console.error('ব্যাকএন্ড ত্রুটি', resp.status, text);
-                        const errorMessage = data && data.detail ? data.detail : 'ব্যাকএন্ডে কোনো ত্রুটি হয়েছে।';
+                        const errorMessage = data && data.detail ? data.detail : 'ব্যাকএন্ডে কোনো ত্রুটি হয়েছে। Render সার্ভার চেক করুন।';
                         throw new Error(errorMessage);
                     }
 
@@ -654,23 +631,17 @@
                     window.__lastApiResponse = data;
 
                     // --- UI রেন্ডারিং লজিক ---
-                    
                     const title = data.title || 'Untitled';
                     const thumb = data.thumbnails && data.thumbnails.length > 0 ? data.thumbnails[0].url : '';
 
                     videoTitle.textContent = title;
-
-                    // Vidssave API থেকে duration/views আসে না বলে শুধু সোর্স দেখানো হচ্ছে
-                    videoDurationContainer.innerHTML = `
-                        <p><i class="fas fa-globe"></i> Vidssave Source</p>
-                    `;
+                    videoDurationContainer.innerHTML = `<p><i class="fas fa-globe"></i> Vidssave Source</p>`;
 
                     videoThumbnail.src = thumb || '';
                     previewSection.classList.add('loaded');
                     initialPreview.style.display = 'none';
                     loadedPreview.style.display = 'block';
 
-                    // ডিফল্ট mp4 ট্যাব রেন্ডার করা
                     const activeBtn = document.querySelector('.format-btn.active');
                     const format = activeBtn ? activeBtn.getAttribute('data-format') : 'mp4';
                     const type = activeBtn ? activeBtn.getAttribute('data-type') : 'video';
@@ -684,22 +655,8 @@
                     generateBtn.disabled = false;
                 }
             });
-
-            // quality থেকে সংখ্যাটা বের করে sort করার হেল্পার - অপরিবর্তিত
-            function parseQualityValue(q){
-                if(!q) return 0;
-                const m = String(q).match(/(\d{2,4})p/i);
-                if(m) return parseInt(m[1], 10);
-                const kb = String(q).match(/(\d+)\s*kbps/i);
-                if(kb) return parseInt(kb[1], 10);
-                return 0;
-            }
-
-            function safe(u){
-                return String(u||'').replace(/"/g,'&quot;').replace(/'/g,"'");
-            }
-
-            // format অনুযায়ী ডাউনলোড অপশন render - এই ফাংশন Vidssave ডেটা অনুযায়ী কাজ করবে
+            
+            // format অনুযায়ী ডাউনলোড অপশন render
             function renderDownloadOptionsFromResponse(data, format, type){
                 downloadOptionsContainer.innerHTML = '';
                 downloadOptionsContainer.style.display = 'none';
@@ -709,22 +666,16 @@
                 const audioList = data.audio_formats || [];
                 
                 let headerHtml = '';
-                if(format === 'mp4') headerHtml = '<h3><i class="fas fa-video"></i> MP4 Download Options</h3>'; 
-                else if(format === 'webm') headerHtml = '<h3><i class="fas fa-video"></i> WebM Download Options</h3>'; 
+                if(format === 'mp4' || format === 'webm') headerHtml = '<h3><i class="fas fa-video"></i> Video Download Options</h3>'; 
                 else if(format === 'mp3') headerHtml = '<h3><i class="fas fa-music"></i> Audio Download Options</h3>';
                 else if(format === 'thumbnail') headerHtml = '<h3><i class="fas fa-image"></i> Thumbnail Download Options</h3>';
 
                 let list = [];
 
-                if(format === 'mp4'){
-                    // Vidssave API সাধারণত কম্বাইন্ড স্ট্রিম দেয়, তাই সরাসরি ব্যবহার করছি
-                    list = videoList.filter(f => f.ext === 'mp4'); 
+                if(format === 'mp4' || format === 'webm'){
+                    list = videoList.filter(f => f.ext === format || (format === 'mp4' && f.ext === 'mp4') || (format === 'webm' && f.ext === 'webm'));
                     list.sort((a,b)=> parseQualityValue(a.resolution) - parseQualityValue(b.resolution));
-                } else if(format === 'webm'){
-                    // Vidssave থেকে WebM সাধারণত আসে না, তাই তালিকা খালি থাকবে
-                    list = videoList.filter(f => f.ext === 'webm'); 
                 } else if(format === 'mp3'){
-                    // অডিও তালিকা
                     list = audioList.filter(f => f.ext in ('mp3', 'm4a'));
                     list.sort((a,b)=> parseQualityValue(a.resolution) - parseQualityValue(b.resolution));
                 }
@@ -779,7 +730,6 @@
                     }
                 }
 
-                // debug button (optional) - অপরিবর্তিত
                 html += `
                     <div style="margin-top:12px;text-align:center;">
                         <button id="showRawBtn" class="download-btn-small" style="background:transparent;color:var(--text-dark);border:1px solid var(--card-border-grey)">
