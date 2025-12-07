@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
     <style>
+        /* --- CSS Styling (আগের কোড অপরিবর্তিত) --- */
         * {
             margin: 0;
             padding: 0;
@@ -373,45 +374,68 @@
             padding-left: 5px;
         }
         
+        /* --- API Input Section HIDDEN or Removed as it's not needed for scraping --- */
         .sidebar-api-input {
-            margin-top: 20px;
-            padding: 10px;
-            border: 1px solid var(--card-border-grey);
-            border-radius: 8px;
-            background-color: var(--background-grey);
-        }
-        
-        .api-input-group {
-            display: flex;
-            align-items: center;
-            padding-bottom: 5px;
-        }
-
-        .api-input-group i {
-            color: var(--primary-blue);
-            margin-right: 10px;
-        }
-
-        #sidebar-api-key-input {
-            flex-grow: 1;
-            padding: 5px 0;
-            border: none;
-            outline: none;
-            background-color: transparent;
-            color: var(--text-dark);
-            font-family: monospace;
-        }
-
-        #sidebar-api-key-toggle {
-            cursor: pointer;
-            color: var(--text-medium);
-            padding-left: 10px;
+            display: none !important; 
         }
 
         .footer {
             text-align: center;
             margin-top: auto; 
             padding-top: 20px;
+        }
+        /* --- Dark Mode Switch Styling (আগের কোড) --- */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 45px;
+            height: 25px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            -webkit-transition: .4s;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary-blue);
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--primary-blue);
+        }
+
+        input:checked + .slider:before {
+            -webkit-transform: translateX(20px);
+            -ms-transform: translateX(20px);
+            transform: translateX(20px);
         }
     </style>
 </head>
@@ -489,7 +513,7 @@
             </label>
         </div>
         
-        <div class="sidebar-api-input">
+        <div class="sidebar-api-input" style="display:none;">
             <h4><i class="fas fa-code"></i> API Add (Private)</h4>
             <div class="api-input-group">
                 <input type="password" id="sidebar-api-key-input" placeholder="Enter your Social Downloader RapidAPI key..." value="">
@@ -500,7 +524,7 @@
                 <button id="clear-api-btn" class="generate-btn" style="flex:1;padding:8px;font-size:13px;background:#ff6b6b">Clear Key</button>
             </div>
             <div id="api-note" style="margin-top:8px;font-size:12px;color:var(--text-medium)">
-                API key আপনার ব্রাউজারে লোকালি সেভ হবে। কখনো public-এ শেয়ার করবেন না।
+                API key আপনার ব্রাউজারে লোকালি সেভ হবে। কখনো public-এ শেয়ার করবেন না।
             </div>
         </div>
         
@@ -522,18 +546,14 @@
             const menuToggle = document.getElementById('menu-toggle');
             const closeSidebar = document.getElementById('close-sidebar');
             const darkModeToggle = document.getElementById('dark-mode-toggle');
-            const sidebarApiKeyInput = document.getElementById('sidebar-api-key-input');
-            const sidebarApiKeyToggle = document.getElementById('sidebar-api-key-toggle');
             const body = document.body;
-            const saveApiBtn = document.getElementById('save-api-btn');
-            const clearApiBtn = document.getElementById('clear-api-btn');
 
-            // ---- Social Download All In One API ----
-            const API_HOST = "social-download-all-in-one.p.rapidapi.com";
-            const API_URL = "https://" + API_HOST + "/v1/social/autolink";
-            const STORAGE_KEY = 'social_downloader_rapidapi_key';
+            // --- নতুন কনস্ট্যান্ট: আপনার ব্যাকএন্ডের স্ক্র্যাপিং এন্ডপয়েন্ট ---
+            const BACKEND_BASE_URL = "https://ytbackend-ubko.onrender.com"; // আপনার রেন্ডার URL
+            const SCRAPING_ENDPOINT = "/scrape/vidssave"; // Vidssave স্ক্র্যাপিং এন্ডপয়েন্ট
+            // ---
 
-            // duration formatter (seconds -> HH:MM:SS)
+            // duration formatter (seconds -> HH:MM:SS) - অপরিবর্তিত
             function formatDuration(seconds) {
                 if (!seconds) return 'N/A';
                 seconds = parseInt(seconds, 10);
@@ -551,7 +571,7 @@
                 return `${pad(m)}:${pad(s)}`;
             }
 
-            // simple filesize formatter (bytes)
+            // simple filesize formatter (bytes) - অপরিবর্তিত
             function formatFileSize(bytes) {
                 if (!bytes || isNaN(bytes)) return '';
                 const k = 1024;
@@ -560,76 +580,30 @@
                 return (bytes / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i];
             }
 
-            // open/close sidebar
+            // open/close sidebar - অপরিবর্তিত
             menuToggle.addEventListener('click', () => sidebar.classList.add('open'));
             closeSidebar.addEventListener('click', () => sidebar.classList.remove('open'));
 
-            // dark mode toggle
+            // dark mode toggle - অপরিবর্তিত
             darkModeToggle.addEventListener('change', () => {
                 body.classList.toggle('dark-mode', darkModeToggle.checked);
+                localStorage.setItem('darkMode', darkModeToggle.checked);
             });
-
-            // show/hide API input value
-            sidebarApiKeyToggle.addEventListener('click', () => {
-                if (sidebarApiKeyInput.type === 'password') {
-                    sidebarApiKeyInput.type = 'text';
-                    sidebarApiKeyToggle.classList.remove('fa-eye-slash');
-                    sidebarApiKeyToggle.classList.add('fa-eye');
-                } else {
-                    sidebarApiKeyInput.type = 'password';
-                    sidebarApiKeyToggle.classList.remove('fa-eye');
-                    sidebarApiKeyToggle.classList.add('fa-eye-slash');
-                }
-            });
-
-            // load stored key (masked)
-            function maskKey(k){
-                if(!k) return '';
-                if(k.length <= 10) return k;
-                return k.slice(0,6) + '…' + k.slice(-4);
-            }
-            const stored = localStorage.getItem(STORAGE_KEY);
-            if(stored){
-                sidebarApiKeyInput.value = maskKey(stored);
-                sidebarApiKeyInput.dataset.masked = 'true';
+            // Initial load dark mode
+            if(localStorage.getItem('darkMode') === 'true') {
+                 body.classList.add('dark-mode');
+                 darkModeToggle.checked = true;
+            } else {
+                 body.classList.remove('dark-mode');
+                 darkModeToggle.checked = false;
             }
 
-            // save API key
-            saveApiBtn.addEventListener('click', ()=>{
-                let val = sidebarApiKeyInput.value.trim();
-                if(!val){
-                    alert('Paste your RapidAPI key in the field (click eye to reveal full if masked).');
-                    return;
-                }
-                if(val.includes('…')){
-                    const real = prompt('Your saved key looks masked. Paste the full RapidAPI key now to overwrite:');
-                    if(!real) return;
-                    localStorage.setItem(STORAGE_KEY, real.trim());
-                    sidebarApiKeyInput.value = maskKey(real.trim());
-                    sidebarApiKeyInput.dataset.masked = 'true';
-                    alert('API key saved locally.');
-                } else {
-                    localStorage.setItem(STORAGE_KEY, val);
-                    sidebarApiKeyInput.value = maskKey(val);
-                    sidebarApiKeyInput.dataset.masked = 'true';
-                    alert('API key saved locally.');
-                }
-            });
+            // API Key লজিক এখন অপ্রয়োজনীয় তাই এটি রিমুভ করা হলো।
 
-            // clear API key
-            clearApiBtn.addEventListener('click', ()=>{
-                if(confirm('Clear saved API key?')){
-                    localStorage.removeItem(STORAGE_KEY);
-                    sidebarApiKeyInput.value = '';
-                    sidebarApiKeyInput.dataset.masked = '';
-                    alert('API key cleared.');
-                }
-            });
-
-            // tab handling (format buttons)
+            // tab handling (format buttons) - অপরিবর্তিত
             formatBtns.forEach(btn=>{
                 btn.addEventListener('click', ()=>{
-                    if(initialPreview.style.display !== 'none') return; // preview না থাকলে কাজ করবে না
+                    if(initialPreview.style.display !== 'none') return; 
                     formatBtns.forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                     const format = btn.getAttribute('data-format');
@@ -640,31 +614,26 @@
                 });
             });
 
-            // main fetch handler (Social Downloader API)
+            // --- প্রধান ফেচ হ্যান্ডলার (এখন Vidssave স্ক্র্যাপিং API কল করবে) ---
             generateBtn.addEventListener('click', async ()=>{
                 const rawUrl = youtubeUrlInput.value.trim();
-                if(!rawUrl) return alert('Please paste any video URL (YouTube, TikTok, Instagram...)');
+                if(!rawUrl) return alert('অনুগ্রহ করে একটি বৈধ লিঙ্ক পেস্ট করুন।');
 
-                const key = localStorage.getItem(STORAGE_KEY) || null;
-                if(!key) {
-                    alert('Please set your RapidAPI key in Settings (sidebar) first.');
-                    sidebar.classList.add('open');
-                    return;
-                }
-
-                generateBtn.textContent = 'Fetching...'; 
+                generateBtn.textContent = 'তথ্য ফেচ করা হচ্ছে...'; 
                 generateBtn.disabled = true;
                 downloadOptionsContainer.style.display = 'none';
 
                 try {
-                    const resp = await fetch(API_URL, {
+                    // আপনার Render ব্যাকএন্ডে POST রিকোয়েস্ট পাঠানো হচ্ছে
+                    const fetchUrl = `${BACKEND_BASE_URL}${SCRAPING_ENDPOINT}`;
+                    
+                    // POST request-এর মাধ্যমে URL পাঠানো হচ্ছে
+                    const resp = await fetch(fetchUrl, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-RapidAPI-Host': API_HOST,
-                            'X-RapidAPI-Key': key
                         },
-                        body: JSON.stringify({ url: rawUrl })
+                        body: JSON.stringify({ video_url: rawUrl }) 
                     });
 
                     const text = await resp.text();
@@ -672,42 +641,28 @@
                     try { data = JSON.parse(text); } catch(e){ data = null; }
 
                     if(!resp.ok){
-                        console.error('API error', resp.status, text);
-                        throw new Error('API request failed: ' + resp.status);
+                        console.error('ব্যাকএন্ড ত্রুটি', resp.status, text);
+                        const errorMessage = data && data.detail ? data.detail : 'ব্যাকএন্ডে কোনো ত্রুটি হয়েছে।';
+                        throw new Error(errorMessage);
                     }
 
-                    if(!data){
-                        throw new Error('Invalid JSON from API.');
+                    if(!data || data.error){
+                        throw new Error(data.message || 'ভিডিওর তথ্য পাওয়া যায়নি।');
                     }
 
-                    console.log('Social API response:', data);
+                    console.log('Final Scraped Data:', data);
                     window.__lastApiResponse = data;
 
-                    if(data.error){
-                        throw new Error(data.message || 'API returned error.');
-                    }
-
-                    // title / author / platform
+                    // --- UI রেন্ডারিং লজিক ---
+                    
                     const title = data.title || 'Untitled';
-                    const author = data.author || data.unique_id || '';
-                    const source = data.source || '';
-
-                    // duration (API কখনো মিলিসেকেন্ড, কখনো সেকেন্ড পাঠাতে পারে)
-                    let seconds = null;
-                    if(typeof data.duration === 'number'){
-                        if(data.duration > 10000) seconds = Math.round(data.duration / 1000);
-                        else seconds = data.duration;
-                    }
-
-                    // thumbnail
-                    const thumb = data.thumbnail || (data.thumbnails && data.thumbnails[0] && data.thumbnails[0].url) || '';
+                    const thumb = data.thumbnails && data.thumbnails.length > 0 ? data.thumbnails[0].url : '';
 
                     videoTitle.textContent = title;
-                    const formattedDuration = formatDuration(seconds);
 
+                    // Vidssave API থেকে duration/views আসে না বলে শুধু সোর্স দেখানো হচ্ছে
                     videoDurationContainer.innerHTML = `
-                        <p><i class="fas fa-clock"></i> ${formattedDuration}</p>
-                        ${source ? `<p><i class="fas fa-globe"></i> ${source.toUpperCase()}</p>` : ''}
+                        <p><i class="fas fa-globe"></i> Vidssave Source</p>
                     `;
 
                     videoThumbnail.src = thumb || '';
@@ -715,21 +670,22 @@
                     initialPreview.style.display = 'none';
                     loadedPreview.style.display = 'block';
 
-                    // ডিফল্ট mp4 ট্যাব
-                    formatBtns.forEach(b => b.classList.remove('active'));
-                    formatBtns[0].classList.add('active');
-                    renderDownloadOptionsFromResponse(data, 'mp4', 'video');
+                    // ডিফল্ট mp4 ট্যাব রেন্ডার করা
+                    const activeBtn = document.querySelector('.format-btn.active');
+                    const format = activeBtn ? activeBtn.getAttribute('data-format') : 'mp4';
+                    const type = activeBtn ? activeBtn.getAttribute('data-type') : 'video';
+                    renderDownloadOptionsFromResponse(data, format, type);
 
                 } catch (err) {
                     console.error(err);
-                    alert('Failed to fetch video info: ' + err.message);
+                    alert('ভিডিও তথ্য ফেচ করা যায়নি: ' + err.message);
                 } finally {
                     generateBtn.textContent = 'Generate Download Links'; 
                     generateBtn.disabled = false;
                 }
             });
 
-            // quality থেকে সংখ্যাটা বের করে sort করার হেল্পার
+            // quality থেকে সংখ্যাটা বের করে sort করার হেল্পার - অপরিবর্তিত
             function parseQualityValue(q){
                 if(!q) return 0;
                 const m = String(q).match(/(\d{2,4})p/i);
@@ -743,55 +699,46 @@
                 return String(u||'').replace(/"/g,'&quot;').replace(/'/g,"'");
             }
 
-            // format অনুযায়ী ডাউনলোড অপশন render
+            // format অনুযায়ী ডাউনলোড অপশন render - এই ফাংশন Vidssave ডেটা অনুযায়ী কাজ করবে
             function renderDownloadOptionsFromResponse(data, format, type){
                 downloadOptionsContainer.innerHTML = '';
                 downloadOptionsContainer.style.display = 'none';
                 if(!data) return;
 
-                const medias = Array.isArray(data.medias) ? data.medias : [];
-
+                const videoList = data.video_formats || [];
+                const audioList = data.audio_formats || [];
+                
                 let headerHtml = '';
-                if(format === 'mp4') headerHtml = '<h3><i class="fas fa-video"></i> MP4 Download Options</h3>';
-                else if(format === 'webm') headerHtml = '<h3><i class="fas fa-video"></i> WebM Download Options</h3>';
+                if(format === 'mp4') headerHtml = '<h3><i class="fas fa-video"></i> MP4 Download Options</h3>'; 
+                else if(format === 'webm') headerHtml = '<h3><i class="fas fa-video"></i> WebM Download Options</h3>'; 
                 else if(format === 'mp3') headerHtml = '<h3><i class="fas fa-music"></i> Audio Download Options</h3>';
                 else if(format === 'thumbnail') headerHtml = '<h3><i class="fas fa-image"></i> Thumbnail Download Options</h3>';
 
                 let list = [];
 
                 if(format === 'mp4'){
-                    list = medias.filter(m => {
-                        const ext = (m.extension || '').toLowerCase();
-                        return (m.type === 'video' || !m.type) && ext === 'mp4';
-                    });
-                    list.sort((a,b)=> parseQualityValue(a.quality) - parseQualityValue(b.quality));
+                    // Vidssave API সাধারণত কম্বাইন্ড স্ট্রিম দেয়, তাই সরাসরি ব্যবহার করছি
+                    list = videoList.filter(f => f.ext === 'mp4'); 
+                    list.sort((a,b)=> parseQualityValue(a.resolution) - parseQualityValue(b.resolution));
                 } else if(format === 'webm'){
-                    list = medias.filter(m => {
-                        const ext = (m.extension || '').toLowerCase();
-                        return (m.type === 'video' || !m.type) && ext === 'webm';
-                    });
-                    list.sort((a,b)=> parseQualityValue(a.quality) - parseQualityValue(b.quality));
+                    // Vidssave থেকে WebM সাধারণত আসে না, তাই তালিকা খালি থাকবে
+                    list = videoList.filter(f => f.ext === 'webm'); 
                 } else if(format === 'mp3'){
-                    list = medias.filter(m => {
-                        const ext = (m.extension || '').toLowerCase();
-                        const t   = (m.type || '').toLowerCase();
-                        const q   = (m.quality || '').toLowerCase();
-                        return t === 'audio' || ext === 'mp3' || q.includes('audio');
-                    });
-                    // kbps অনুযায়ী sort
-                    list.sort((a,b)=> parseQualityValue(a.quality) - parseQualityValue(b.quality));
+                    // অডিও তালিকা
+                    list = audioList.filter(f => f.ext in ('mp3', 'm4a'));
+                    list.sort((a,b)=> parseQualityValue(a.resolution) - parseQualityValue(b.resolution));
                 }
 
                 let html = headerHtml;
 
                 if(format === 'thumbnail'){
-                    const thumbUrl = data.thumbnail || (data.thumbnails && data.thumbnails[0] && data.thumbnails[0].url) || '';
+                    const thumbUrl = data.thumbnails && data.thumbnails.length > 0 ? data.thumbnails[0].url : '';
                     if(thumbUrl){
                         html += `
                             <div class="download-item">
                                 <div class="item-details">
                                     <span class="format-tag">IMG</span>
-                                    <span style="font-weight:700">Default Thumbnail</span>
+                                    <span style="font-weight:700">High Quality Thumbnail</span>
                                 </div>
                                 <div style="display:flex;gap:8px">
                                     <a class="download-btn-small" href="${safe(thumbUrl)}" download target="_blank" rel="noreferrer">
@@ -805,30 +752,22 @@
                     }
                 } else {
                     if(list.length){
-                        // ডুপ্লিকেট URL+quality রিমুভ
-                        const seen = new Set();
                         list.forEach(m=>{
-                            const u = m.url;
-                            const q = m.quality || '';
-                            const key = u + '|' + q;
-                            if(!u || seen.has(key)) return;
-                            seen.add(key);
-
-                            const ext = (m.extension || '').toUpperCase();
-                            const qText = m.quality || '';
-                            const sizeText = m.data_size ? formatFileSize(m.data_size) : '';
+                            const ext = (m.ext || format).toUpperCase();
+                            const qText = m.resolution || 'Default';
+                            const sizeText = m.filesize ? formatFileSize(m.filesize) : '';
 
                             html += `
                                 <div class="download-item">
                                     <div class="item-details">
-                                        <span class="format-tag">${ext || (format.toUpperCase())}</span>
-                                        <span style="margin-right:10px;font-weight:700">${qText || 'Default'}</span>
+                                        <span class="format-tag">${ext}</span>
+                                        <span style="margin-right:10px;font-weight:700">${qText}</span>
                                         <span class="size" style="color:${sizeText? 'var(--text-dark)': 'var(--text-medium)'}">
                                             ${sizeText ? sizeText : ''}
                                         </span>
                                     </div>
                                     <div style="display:flex;gap:8px;align-items:center">
-                                        <a class="download-btn-small" href="${safe(u)}" target="_blank" rel="noreferrer">
+                                        <a class="download-btn-small" href="${safe(m.url)}" target="_blank" rel="noreferrer">
                                             <i class="fas fa-download"></i> Download
                                         </a>
                                     </div>
@@ -836,15 +775,11 @@
                             `;
                         });
                     } else {
-                        if(format === 'mp3'){
-                            html += '<div style="color:var(--text-medium);padding:10px 0;">No audio formats found for this link.</div>';
-                        } else {
-                            html += '<div style="color:var(--text-medium);padding:10px 0;">No ' + format.toUpperCase() + ' formats found for this link.</div>';
-                        }
+                        html += '<div style="color:var(--text-medium);padding:10px 0;">No ' + format.toUpperCase() + ' formats found for this link.</div>';
                     }
                 }
 
-                // debug button (optional)
+                // debug button (optional) - অপরিবর্তিত
                 html += `
                     <div style="margin-top:12px;text-align:center;">
                         <button id="showRawBtn" class="download-btn-small" style="background:transparent;color:var(--text-dark);border:1px solid var(--card-border-grey)">
@@ -864,14 +799,13 @@
                     });
                 }
 
-                // শেষ আইটেম থেকে বর্ডার রিমুভ
                 const items = downloadOptionsContainer.querySelectorAll('.download-item');
                 if(items.length > 0){
                     items[items.length - 1].style.borderBottom = 'none';
                 }
             }
 
-            // initial state
+            // initial state - অপরিবর্তিত
             initialPreview.style.display = 'flex';
             loadedPreview.style.display = 'none';
             youtubeUrlInput.value = "";
