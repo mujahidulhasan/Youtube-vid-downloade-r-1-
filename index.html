@@ -752,14 +752,12 @@
 
                 // Determine the chosen list and header
                 if(format === 'mp4') {
-                    // Backend now filters mp4 for high probability of audio
                     headerHtml = '<h3><i class="fas fa-video"></i> MP4 Download Options (Audio Preferred)</h3>';
                     chosenList = streams.mp4 || [];
                 } else if(format === 'webm') {
                     headerHtml = '<h3><i class="fas fa-video"></i> WebM Download Options</h3>';
                     chosenList = streams.webm || [];
                 } else if(format === 'mp3') {
-                    // Audio-only streams
                     headerHtml = '<h3><i class="fas fa-music"></i> MP3 Audio Download Options</h3>';
                     chosenList = streams.audio || [];
                     fallbackList = [...(streams.mp4 || []), ...(streams.webm || [])];
