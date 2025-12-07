@@ -536,7 +536,6 @@
             const body = document.body;
 
             // --- নতুন কনস্ট্যান্ট: আপনার ব্যাকএন্ডের স্ক্র্যাপিং এন্ডপয়েন্ট ---
-            // এই URL টি অবশ্যই আপনার Render সার্ভিসের URL হতে হবে।
             const BACKEND_BASE_URL = "https://ytbackend-ubko.onrender.com"; 
             const SCRAPING_ENDPOINT = "/scrape/vidssave"; 
             // ---
@@ -605,6 +604,7 @@
                 try {
                     const fetchUrl = `${BACKEND_BASE_URL}${SCRAPING_ENDPOINT}`;
                     
+                    // JSON বডি হিসেবে URL পাঠানো হচ্ছে (422 Fix)
                     const resp = await fetch(fetchUrl, {
                         method: 'POST',
                         headers: {
@@ -633,9 +633,15 @@
                     // --- UI রেন্ডারিং লজিক ---
                     const title = data.title || 'Untitled';
                     const thumb = data.thumbnails && data.thumbnails.length > 0 ? data.thumbnails[0].url : '';
+                    const duration = data.duration || 'N/A'; // Formatted Duration
 
                     videoTitle.textContent = title;
-                    videoDurationContainer.innerHTML = `<p><i class="fas fa-globe"></i> Vidssave Source</p>`;
+                    
+                    // Duration এখন Backend থেকে Formatted আসছে
+                    videoDurationContainer.innerHTML = `
+                        <p><i class="fas fa-clock"></i> ${duration}</p>
+                        <p><i class="fas fa-globe"></i> Vidssave Source</p>
+                    `;
 
                     videoThumbnail.src = thumb || '';
                     previewSection.classList.add('loaded');
@@ -676,6 +682,7 @@
                     list = videoList.filter(f => f.ext === format || (format === 'mp4' && f.ext === 'mp4') || (format === 'webm' && f.ext === 'webm'));
                     list.sort((a,b)=> parseQualityValue(a.resolution) - parseQualityValue(b.resolution));
                 } else if(format === 'mp3'){
+                    // MP3/M4A ফরমেটগুলো দেখান
                     list = audioList.filter(f => f.ext in ('mp3', 'm4a'));
                     list.sort((a,b)=> parseQualityValue(a.resolution) - parseQualityValue(b.resolution));
                 }
@@ -706,7 +713,8 @@
                         list.forEach(m=>{
                             const ext = (m.ext || format).toUpperCase();
                             const qText = m.resolution || 'Default';
-                            const sizeText = m.filesize ? formatFileSize(m.filesize) : '';
+                            // File Size এখন Byte আকারে আসে, তাই formatFileSize ব্যবহার
+                            const sizeText = m.filesize ? formatFileSize(m.filesize) : ''; 
 
                             html += `
                                 <div class="download-item">
