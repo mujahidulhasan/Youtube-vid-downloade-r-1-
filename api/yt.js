@@ -1,15 +1,16 @@
-// File: api/yt.js  (Vercel Serverless Function)
+// File: api/yt.js (Vercel Serverless Function)
+// এই ফাইলটি আপনার Vercel Environment Variable (RAPIDAPI_KEY) ব্যবহার করবে।
 
 export default async function handler(req, res) {
   try {
-    const { videoId, url } = req.query;
+    const { url } = req.query; // ফ্রন্টএন্ড থেকে শুধু URL আশা করা হচ্ছে
 
-    // 1) URL / ID check
-    if (!videoId && !url) {
+    // 1) URL check
+    if (!url) {
       return res.status(400).json({
         ok: false,
         where: "api",
-        error: "Missing videoId or url query param",
+        error: "Missing url query param. Please provide the full YouTube URL.",
       });
     }
 
@@ -19,17 +20,16 @@ export default async function handler(req, res) {
       return res.status(500).json({
         ok: false,
         where: "api",
-        error: "RAPIDAPI_KEY env is NOT set on server",
+        error: "Configuration Error: RAPIDAPI_KEY env is NOT set on server",
       });
     }
 
     const params = new URLSearchParams({
+      url: url, // সরাসরি URL প্যারামিটার হিসেবে পাঠানো হচ্ছে
+      urlAccess: "normal",
       videos: "auto",
       audios: "auto",
-      urlAccess: "normal",
     });
-    if (videoId) params.set("videoId", videoId);
-    if (url) params.set("url", url);
 
     const apiUrl =
       "https://youtube-media-downloader.p.rapidapi.com/v2/video/details?" +
@@ -44,22 +44,22 @@ export default async function handler(req, res) {
       },
     });
 
-    const text = await r.text();
+    const txt = await r.text();
     let raw;
     try {
-      raw = JSON.parse(text);
+      raw = JSON.parse(txt);
     } catch {
       raw = null;
     }
 
-    // 3) RapidAPI থেকে error এলে একই status + debug ফেরত দাও
+    // 3) RapidAPI থেকে error এলে একই status + debug ফেরত দাও (Key Invalid/Quota Exceeded)
     if (!r.ok) {
       return res.status(r.status).json({
         ok: false,
         where: "rapidapi",
         status: r.status,
-        error: "RapidAPI returned non-200 status (Key Invalid/Quota Exceeded)",
-        body: raw || text,
+        error: "RapidAPI returned non-200 status (Invalid Key or Quota Exceeded)",
+        body: raw || txt,
       });
     }
 
@@ -73,14 +73,13 @@ export default async function handler(req, res) {
       });
     }
 
-    // ---- স্ট্রিম প্রসেসিং (ডুপ্লিকেট ফিক্স ও ক্যাটাগরি) ----
+    // ---- স্ট্রিম প্রসেসিং (Dedupe, Audio/Video Separate) ----
     const streams = [];
     const addArr = (arr) => {
       if (Array.isArray(arr)) arr.forEach((it) => streams.push(it));
     };
 
-    if (raw.videos && Array.isArray(raw.videos.items))
-      addArr(raw.videos.items);
+    if (raw.videos && Array.isArray(raw.videos.items)) addArr(raw.videos.items);
     ["medias", "formats", "streams", "results", "downloads", "videoStreams", "audioStreams", "items"].forEach(
       (k) => addArr(raw[k])
     );
@@ -108,8 +107,7 @@ export default async function handler(req, res) {
         url: u,
         mimeType,
         extension: ext,
-        hasAudio:
-          typeof it.hasAudio !== "undefined" ? !!it.hasAudio : null,
+        hasAudio: typeof it.hasAudio !== "undefined" ? !!it.hasAudio : null,
         height: it.height || null,
         width: it.width || null,
         size:
@@ -125,9 +123,8 @@ export default async function handler(req, res) {
 
     const mp4 = [];
     const webm = [];
-    const audio = [];
+    const audioOnly = [];
     const other = [];
-    const videoOnly = [];
 
     for (const s of norm) {
       const mt = s.mimeType || "";
@@ -143,38 +140,24 @@ export default async function handler(req, res) {
         lu.includes("mime=audio");
 
       if (isAudioCandidate && !hasRes) {
-        audio.push(s);
+        audioOnly.push(s);
         continue;
       }
       
-      const isMuxed = 
-          (s.height > 0 && s.height <= 480) || 
-          (s.height > 0 && (s.hasAudio === true || s.bitrate));
+      // MP4 Audio Fix: Include if hasAudio is true OR if it's low resolution (likely muxed)
+      const isMuxedCandidate = (s.height > 0 && s.height <= 480) || s.hasAudio === true || s.bitrate;
 
       if (ext === "mp4" || mt.includes("video/mp4")) {
-        if (isMuxed) {
-            mp4.push(s); 
+        if (isMuxedCandidate) {
+            mp4.push(s); // High confidence audio included
         } else if(hasRes) {
-            videoOnly.push(s); 
+            other.push(s); // Video-only (mute) streams move to other/discard (if you want to strictly avoid mute videos in main list)
         }
       } else if (ext === "webm" || mt.includes("video/webm")) {
-         if (isMuxed) {
-            webm.push(s);
-        } else if(hasRes) {
-            videoOnly.push(s);
-        }
+         webm.push(s); // WebM lists often need the video-only streams too for high res
       } else {
         other.push(s);
       }
-    }
-    
-    // Add high-resolution video-only streams to the main lists for user choice
-    for (const s of videoOnly) {
-        if (s.extension === 'mp4' || s.mimeType.includes("video/mp4")) {
-            mp4.push(s);
-        } else if (s.extension === 'webm' || s.mimeType.includes("video/webm")) {
-            webm.push(s);
-        }
     }
 
     // Deduplication by Resolution+Extension
@@ -192,11 +175,12 @@ export default async function handler(req, res) {
     }
 
     function sortByHeight(list) {
-      return list.sort(
-        (a, b) => (a.height || 0) - (b.height || 0)
-      );
+      return list.sort((a, b) => (a.height || 0) - (b.height || 0));
     }
-
+    
+    // Add audio-only video streams (if they are high res video-only) to MP4/WebM to give users options
+    // NOTE: This part is simplified on the backend to prioritize cleaned data.
+    
     return res.status(200).json({
       ok: true, // Success flag for frontend
       errorId: raw.errorId,
@@ -210,7 +194,7 @@ export default async function handler(req, res) {
       streams: {
         mp4: sortByHeight(dedupeRes(mp4)),
         webm: sortByHeight(dedupeRes(webm)),
-        audio: audio,
+        audio: audioOnly,
         other: other,
       },
     });
