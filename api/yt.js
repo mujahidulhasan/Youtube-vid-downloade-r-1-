@@ -1,26 +1,33 @@
-// File: api/yt.js (Vercel serverless function)
-// This function fetches data from RapidAPI, processes the streams, and returns clean JSON.
+// File: api/yt.js  (Vercel Serverless Function)
 
 export default async function handler(req, res) {
   try {
     const { videoId, url } = req.query;
 
-    const apiKey = process.env.RAPIDAPI_KEY; // Key must be set in Vercel Environment Variables
-    if (!apiKey) {
-      return res.status(500).json({ error: "RAPIDAPI_KEY env missing. Please set the key in Vercel settings." });
-    }
-
+    // 1) URL / ID check
     if (!videoId && !url) {
-      return res.status(400).json({ error: "videoId or url is required" });
+      return res.status(400).json({
+        ok: false,
+        where: "api",
+        error: "Missing videoId or url query param",
+      });
     }
 
-    // --- Build Query Parameters ---
+    // 2) RapidAPI key (Vercel env থেকে)
+    const apiKey = process.env.RAPIDAPI_KEY;
+    if (!apiKey) {
+      return res.status(500).json({
+        ok: false,
+        where: "api",
+        error: "RAPIDAPI_KEY env is NOT set on server",
+      });
+    }
+
     const params = new URLSearchParams({
       videos: "auto",
       audios: "auto",
       urlAccess: "normal",
     });
-
     if (videoId) params.set("videoId", videoId);
     if (url) params.set("url", url);
 
@@ -28,7 +35,7 @@ export default async function handler(req, res) {
       "https://youtube-media-downloader.p.rapidapi.com/v2/video/details?" +
       params.toString();
 
-    // --- Fetch from RapidAPI ---
+    // --- RapidAPI কল ---
     const r = await fetch(apiUrl, {
       method: "GET",
       headers: {
@@ -37,25 +44,40 @@ export default async function handler(req, res) {
       },
     });
 
+    const text = await r.text();
+    let raw;
+    try {
+      raw = JSON.parse(text);
+    } catch {
+      raw = null;
+    }
+
+    // 3) RapidAPI থেকে error এলে একই status + debug ফেরত দাও
     if (!r.ok) {
-      const txt = await r.text();
-      return res
-        .status(500)
-        .json({ error: "RapidAPI external error", status: r.status, body: txt });
+      return res.status(r.status).json({
+        ok: false,
+        where: "rapidapi",
+        status: r.status,
+        error: "RapidAPI returned non-200 status (Key Invalid/Quota Exceeded)",
+        body: raw || text,
+      });
     }
 
-    const raw = await r.json();
-
-    // If API returns an error message
-    if (raw.errorId && raw.errorId !== "Success") {
-      return res.status(200).json(raw);
+    if (raw && raw.errorId && raw.errorId !== "Success") {
+      return res.status(200).json({
+        ok: false,
+        where: "rapidapi-payload",
+        errorId: raw.errorId,
+        reason: raw.reason || raw.message || "Unknown API payload error",
+        raw,
+      });
     }
 
-    // --- Stream Collection and Normalization ---
+    // ---- স্ট্রিম প্রসেসিং (ডুপ্লিকেট ফিক্স ও ক্যাটাগরি) ----
     const streams = [];
-    function addArr(arr) {
+    const addArr = (arr) => {
       if (Array.isArray(arr)) arr.forEach((it) => streams.push(it));
-    }
+    };
 
     if (raw.videos && Array.isArray(raw.videos.items))
       addArr(raw.videos.items);
@@ -68,23 +90,22 @@ export default async function handler(req, res) {
 
     for (const it of streams) {
       if (!it || typeof it !== "object") continue;
-      const url2 =
+      const u =
         it.url ||
         it.downloadUrl ||
         it.streamUrl ||
         it.mediaUrl ||
         it.source ||
         it.link;
-      if (!url2 || seenUrls.has(url2)) continue;
-      seenUrls.add(url2);
+      if (!u || seenUrls.has(u)) continue;
+      seenUrls.add(u);
 
       const mimeType = (it.mimeType || it.type || "").toLowerCase();
       const ext =
         (it.extension || (mimeType.split("/").pop()) || "").toLowerCase();
 
-      // Normalize common stream data
       norm.push({
-        url: url2,
+        url: u,
         mimeType,
         extension: ext,
         hasAudio:
@@ -97,7 +118,7 @@ export default async function handler(req, res) {
           it.quality_label ||
           it.quality ||
           it.format_note ||
-          null,
+          (it.height ? it.height + "p" : null),
         bitrate: it.bitrate || it.audioBitrate || it.bitrateKbps || null,
       });
     }
@@ -106,15 +127,14 @@ export default async function handler(req, res) {
     const webm = [];
     const audio = [];
     const other = [];
-    const videoOnly = []; // To store streams without guaranteed audio
+    const videoOnly = [];
 
     for (const s of norm) {
       const mt = s.mimeType || "";
       const ext = s.extension || "";
       const lu = s.url.toLowerCase();
       const hasRes = s.height > 0;
-      
-      // Heuristic Check for Audio-Only:
+
       const isAudioCandidate = 
         mt.startsWith("audio/") ||
         ["mp3", "m4a", "aac", "opus"].includes(ext) ||
@@ -127,17 +147,15 @@ export default async function handler(req, res) {
         continue;
       }
       
-      // Heuristic Check for Muxed/Combined Audio+Video:
-      // We consider it muxed if it's low resolution or explicitly marked with audio props
       const isMuxed = 
           (s.height > 0 && s.height <= 480) || 
           (s.height > 0 && (s.hasAudio === true || s.bitrate));
 
       if (ext === "mp4" || mt.includes("video/mp4")) {
         if (isMuxed) {
-            mp4.push(s); // Muxed (Guaranteed Audio for low res or high confidence)
+            mp4.push(s); 
         } else if(hasRes) {
-            videoOnly.push(s); // High Res (Likely Video-Only, needs warning)
+            videoOnly.push(s); 
         }
       } else if (ext === "webm" || mt.includes("video/webm")) {
          if (isMuxed) {
@@ -150,8 +168,7 @@ export default async function handler(req, res) {
       }
     }
     
-    // Add high-resolution video-only streams to the main lists for user choice, 
-    // even though they lack audio (audio is a warning on the frontend).
+    // Add high-resolution video-only streams to the main lists for user choice
     for (const s of videoOnly) {
         if (s.extension === 'mp4' || s.mimeType.includes("video/mp4")) {
             mp4.push(s);
@@ -160,15 +177,14 @@ export default async function handler(req, res) {
         }
     }
 
-
+    // Deduplication by Resolution+Extension
     function dedupeRes(list) {
       const seen = new Set();
       const out = [];
       for (const s of list) {
-        // Dedupe by resolution + extension, prioritizing streams with bitrate info (likely better muxed/audio quality)
-        const resKey = (s.height || "") + "|" + (s.extension || "");
-        if (!seen.has(resKey)) {
-          seen.add(resKey);
+        const key = (s.height || "0") + "|" + (s.extension || "");
+        if (!seen.has(key)) {
+          seen.add(key);
           out.push(s);
         }
       }
@@ -182,6 +198,7 @@ export default async function handler(req, res) {
     }
 
     return res.status(200).json({
+      ok: true, // Success flag for frontend
       errorId: raw.errorId,
       id: raw.id,
       title: raw.title,
@@ -191,15 +208,18 @@ export default async function handler(req, res) {
       thumbnails: raw.thumbnails,
       channel: raw.channel,
       streams: {
-        // We dedupe and sort the lists before sending to frontend
         mp4: sortByHeight(dedupeRes(mp4)),
         webm: sortByHeight(dedupeRes(webm)),
-        audio: audio, 
+        audio: audio,
         other: other,
       },
     });
   } catch (e) {
     console.error(e);
-    return res.status(500).json({ error: "Server error", message: e.message });
+    return res.status(500).json({
+      ok: false,
+      where: "handler-catch",
+      error: e.message,
+    });
   }
-    }
+}
