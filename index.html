@@ -44,7 +44,6 @@
             --sidebar-hover: #34495e;
         }
 
-        /* **UI/UX: স্ক্রল এবং সাইডবার ফিক্স** */
         body {
             background-color: var(--body-bg);
             color: var(--text-dark);
@@ -195,7 +194,6 @@
             margin-bottom: 10px; 
         }
         
-        /* **UI/UX: ডিউরেশন এবং ভিউজ বার বিন্যাস** */
         #video-duration {
             display: flex;
             justify-content: space-between; 
@@ -306,7 +304,6 @@
             display: flex;
             align-items: center;
             gap: 5px;
-            /* **আন্ডারলাইন রিমুভ** */
             text-decoration: none; 
             font-family: 'Noto Sans', 'Hind Siliguri', sans-serif; 
         }
@@ -516,46 +513,7 @@
     </div>
 
     <script>
-        /**
-         * NOTE: This function is now simplified as the main normalization happens in the Backend (/api/yt).
-         * It serves as a placeholder for stream filtering used below.
-         */
-        function findAudioStreams(data){
-          if(!data || typeof data !== 'object') return [];
-
-          const buckets = [];
-          ['medias','formats','streams','results','downloads','audioStreams','videoStreams','items','results','files','videos'].forEach(k=>{
-            if(Array.isArray(data[k])) buckets.push(...data[k]);
-          });
-
-          if(data.videos && Array.isArray(data.videos.items)) buckets.push(...data.videos.items);
-
-          const tops = ['url','videoUrl','downloadUrl','source','downloadURL','sourceUrl','mediaUrl'];
-          tops.forEach(k => { if(data[k]) buckets.push({ url: data[k], sourceKey: 'top.'+k }); });
-
-          const norm = buckets.map(it=>{
-            if(!it || typeof it !== 'object') return null;
-            const url = it.url || it.downloadUrl || it.streamUrl || it.mediaUrl || it.source || it.link || it.videoUrl || null;
-            if(!url) return null;
-            const mimeType = (it.mimeType || it.type || '').toString();
-            const ext = (it.extension || (mimeType.split('/').pop()) || '').toString().toLowerCase();
-            return {
-              url: url,
-              mimeType: mimeType.toLowerCase(),
-              extension: ext,
-              hasAudio: typeof it.hasAudio !== 'undefined' ? Boolean(it.hasAudio) : null,
-              bitrate: it.bitrate || it.audioBitrate || it.bitrateKbps || null,
-              sizeText: it.sizeText || it.filesize || it.size || it.data_size || null,
-              quality: it.quality_label || it.quality || it.format_note || (it.height ? (it.height+'p') : null),
-              height: it.height || null, // Keeping height for filtering video streams
-              itag: it.itag || null,
-              sourceKey: it.sourceKey || ''
-            };
-          }).filter(Boolean);
-
-          return norm; // Returning the raw normalized list for manual filtering
-        }
-
+        // NOTE: The heavy lifting logic is now moved to /api/yt.js
 
         document.addEventListener('DOMContentLoaded', () => {
             const generateBtn = document.getElementById('generate-btn');
@@ -579,9 +537,8 @@
             const clearApiBtn = document.getElementById('clear-api-btn');
 
             // **API URL পরিবর্তন: নতুন ব্যাকএন্ড এন্ডপয়েন্ট ব্যবহার**
-            const API_HOST = "youtube-media-downloader.p.rapidapi.com"; // Kept for reference only
-            const API_URL = "/api/yt"; // Local Vercel Serverless Function
-            const STORAGE_KEY = 'rapidapi_key_v2'; // Kept for API key storage UI
+            const API_URL = "/api/yt"; 
+            const STORAGE_KEY = 'rapidapi_key_v2'; 
 
             function formatDuration(seconds) {
                 if(!seconds) return 'N/A';
@@ -614,7 +571,7 @@
                 body.classList.toggle('dark-mode', darkModeToggle.checked);
             });
             
-            // **NOTE: API Key Input UI is left intact, but the key is NOT used here anymore.**
+            // ... (API Key UI functions, as they are not used for fetch) ...
             function maskKey(k){
                 if(!k) return '';
                 if(k.length <= 10) return k;
@@ -627,7 +584,7 @@
             }
 
             saveApiBtn.addEventListener('click', ()=>{
-                alert('API key is now managed in the Vercel Environment Variables (RAPIDAPI_KEY) for security. Local saving is for testing only.');
+                alert('API key is now managed in the Vercel Environment Variables (RAPIDAPI_KEY) for security.');
                 let val = sidebarApiKeyInput.value.trim();
                 if(!val){
                     return;
@@ -671,34 +628,57 @@
                 });
             });
 
+
+            // **নতুন fetch logic - এরর হ্যান্ডলিং সহ**
+            async function fetchFromBackend(videoUrlOrId){
+                // Check if input is likely a short ID or a full URL
+                const isId = /^[A-Za-z0-9_-]{8,}$/.test(videoUrlOrId) && !videoUrlOrId.includes('/');
+                const param = isId ? ("videoId=" + encodeURIComponent(videoUrlOrId))
+                                : ("url=" + encodeURIComponent(videoUrlOrId));
+
+                const res = await fetch(API_URL + "?" + param);
+                let data;
+                try {
+                    data = await res.json();
+                } catch {
+                    // Handle non-JSON response (e.g., Vercel's generic 500 error page)
+                    throw new Error("Server returned an unknown error. Status: " + res.status);
+                }
+
+                // Handle errors explicitly returned by our backend
+                if (!res.ok || data.ok === false) {
+                    console.log("BACKEND FULL ERROR:", data);
+                    const msg =
+                        (data && data.error) ||
+                        (data && data.reason) ||
+                        ("HTTP " + res.status);
+                    
+                    const where = data.where || "unknown";
+                    
+                    // Show a specific alert based on the error
+                    if (where === "rapidapi") {
+                        throw new Error(`API Error: Invalid Key or Quota Exceeded. Please check RAPIDAPI_KEY on Vercel.`);
+                    }
+                    if (where === "api" && data.error.includes("RAPIDAPI_KEY")) {
+                         throw new Error(`Configuration Error: RAPIDAPI_KEY is NOT set on Vercel.`);
+                    }
+                    
+                    throw new Error(`Backend Error (${where}): ${msg}`);
+                }
+
+                return data;
+            }
+
             generateBtn.addEventListener('click', async ()=>{
                 const rawUrl = youtubeUrlInput.value.trim();
                 if(!rawUrl) return alert('Please paste a YouTube URL or ID');
-                
-                // **Backend Call**
-                const encodedUrl = encodeURIComponent(rawUrl);
-                const fetchUrl = `${API_URL}?url=${encodedUrl}`;
 
                 generateBtn.textContent = 'Fetching...'; generateBtn.disabled = true;
                 downloadOptionsContainer.style.display = 'none';
                 try {
-                    const resp = await fetch(fetchUrl);
-
-                    if(!resp.ok){
-                         const txt = await resp.text();
-                         console.error('BACKEND FETCH ERROR', resp.status, txt);
-                         throw new Error('Backend request failed: ' + resp.status);
-                    }
-
-                    const data = await resp.json();
-                    window.__lastApiResponse = data;
-                    console.log('Processed API response', data);
-
-                    if(data && data.errorId && data.errorId !== 'Success'){
-                        alert('API returned error: ' + (data.reason || data.errorId));
-                        generateBtn.textContent = 'Generate Video Content'; generateBtn.disabled = false;
-                        return;
-                    }
+                    // Call the robust fetch function
+                    const data = await fetchFromBackend(rawUrl);
+                    window.__lastApiResponse = data; // Store full response
 
                     // Render Metadata (uses cleaned data from backend)
                     const title = data.title || 'Untitled';
@@ -728,31 +708,14 @@
 
                 } catch (err) {
                     console.error(err);
-                    alert('Failed to fetch video info: ' + err.message);
+                    alert(err.message);
                 } finally {
                     generateBtn.textContent = 'Generate Video Content'; generateBtn.disabled = false;
                 }
             });
 
-            function extractID(x){
-                if(!x) return null;
-                if(/^[A-Za-z0-9_-]{8,}$/.test(x) && !x.includes('/')) return x;
-                try {
-                    const u = new URL(x);
-                    if(u.hostname.includes('youtu.be')) return u.pathname.slice(1);
-                    if(u.hostname.includes('youtube.com')){
-                        const v = u.searchParams.get('v');
-                        if(v) return v;
-                        const parts = u.pathname.split('/');
-                        const i = parts.indexOf('embed');
-                        if(i>=0 && parts[i+1]) return parts[i+1];
-                    }
-                } catch(e){}
-                return null;
-            }
-            
-            
-            // **renderDownloadOptionsFromResponse now accepts cleaned 'streams' object**
+
+            // render function: now accepts cleaned 'streams' object
             function renderDownloadOptionsFromResponse(streams, format, type){
                 downloadOptionsContainer.innerHTML = '';
                 downloadOptionsContainer.style.display = 'none';
@@ -763,7 +726,7 @@
                 let fallbackList = [];
                 let headerHtml = '';
 
-                // STEP 1: Determine the chosen list and header
+                // Determine the chosen list and header
                 if(format === 'mp4') {
                     headerHtml = '<h3><i class="fas fa-video"></i> MP4 Download Options (High-res may lack audio)</h3>';
                     chosenList = streams.mp4 || [];
@@ -776,7 +739,7 @@
                     fallbackList = [...(streams.mp4 || []), ...(streams.webm || [])];
                 } else if(format === 'thumbnail') {
                     headerHtml = '<h3><i class="fas fa-image"></i> Thumbnail Download Options</h3>';
-                    // Thumbnails are still in the original response
+                    
                     const data = window.__lastApiResponse;
                     const thumbs = (data.thumbnails && data.thumbnails.length) ? data.thumbnails : (data.thumbnail ? [{ url: data.thumbnail }] : []);
                     
@@ -800,17 +763,15 @@
                         html += '<div class="small" style="color:var(--text-medium)">No thumbnails found.</div>';
                     }
                     downloadOptionsContainer.innerHTML = html;
-                    downloadOptionsContainer.style.display = 'block';
                     
-                    // Final touch for thumbnail section
                     const items = downloadOptionsContainer.querySelectorAll('.download-item');
                     if(items.length > 0) {
                         items[items.length - 1].style.borderBottom = 'none';
                     }
-                    return; // Exit here for thumbnail rendering
+                    return;
                 }
                 
-                // STEP 2: Render selected lists (MP4/WebM/Audio)
+                // Render selected lists (MP4/WebM/Audio)
                 
                 let html = headerHtml;
                 if(chosenList.length){
@@ -821,7 +782,6 @@
 
                 // MP3 fallback logic
                 if(format === 'mp3' && chosenList.length === 0 && fallbackList.length > 0){
-                    // Filter fallback list to remove duplicates by URL (which backend should mostly handle)
                     const uniqueFallback = [];
                     const seenUrls = new Set();
                     fallbackList.forEach(item => {
@@ -836,11 +796,10 @@
                 }
 
                 downloadOptionsContainer.innerHTML = html;
-                downloadOptionsContainer.style.display = 'block';
                 
                 // Final touch (raw JSON button and last border removal)
                 html += `<div style="margin-top:12px;text-align:center;"><button id="showRawBtn" class="download-btn-small" style="background:transparent;color:var(--text-dark);border:1px solid var(--card-border-grey)"><i class="fas fa-code"></i> Show raw JSON (console too)</button></div>`;
-                downloadOptionsContainer.innerHTML = html; // Re-render with button
+                downloadOptionsContainer.innerHTML = html; 
                 
                 const rawBtn = document.getElementById('showRawBtn');
                 if(rawBtn){
@@ -854,6 +813,8 @@
                 if(items.length > 0) {
                     items[items.length - 1].style.borderBottom = 'none';
                 }
+
+                downloadOptionsContainer.style.display = 'block';
             }
 
             function safe(u){
@@ -862,7 +823,6 @@
 
             function makeRow(it){
                 const url = it.url || it.downloadUrl || it.streamUrl || it.mediaUrl || it.source || it.link || '';
-                // Use normalized properties from backend
                 const quality = it.quality || (it.height? (it.height + 'p') : '');
                 const ext = it.extension || (it.mimeType ? it.mimeType.split(';')[0].split('/').pop() : 'BIN');
                 const size = it.size || it.sizeText || '';
