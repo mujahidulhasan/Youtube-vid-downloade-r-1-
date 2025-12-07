@@ -10,7 +10,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
     <style>
-        /* (All CSS styles, including UI/UX fixes, are kept from the previous final version) */
         * {
             margin: 0;
             padding: 0;
@@ -44,6 +43,7 @@
             --sidebar-hover: #34495e;
         }
 
+        /* **মোবাইল ফিট সেটিং** */
         body {
             background-color: var(--body-bg);
             color: var(--text-dark);
@@ -53,10 +53,6 @@
             min-height: 100vh; 
             padding: 0; 
             transition: background-color 0.3s;
-        }
-        
-        body.sidebar-open {
-            overflow: hidden; 
         }
 
         .container {
@@ -70,7 +66,6 @@
             min-height: 100vh; 
             display: flex;
             flex-direction: column;
-            overflow-y: auto; 
         }
 
         .header {
@@ -182,6 +177,7 @@
             padding: 15px 0;
         }
         
+        /* **ভিডিও তথ্য বিন্যাস (টাইটেল উপরে, ডিউরেশন/ভিউজ নিচে)** */
         .video-info {
             margin-bottom: 10px; 
         }
@@ -194,9 +190,10 @@
             margin-bottom: 10px; 
         }
         
+        /* **ভিডিও ডিউরেশন এবং ভিউজ বার বিন্যাস** */
         #video-duration {
             display: flex;
-            justify-content: space-between; 
+            justify-content: space-between; /* ডিউরেশন বামে, ভিউজ ডানে */
             align-items: center;
             margin-top: 5px; 
         }
@@ -304,6 +301,7 @@
             display: flex;
             align-items: center;
             gap: 5px;
+            /* **আন্ডারলাইন রিমুভ** */
             text-decoration: none; 
             font-family: 'Noto Sans', 'Hind Siliguri', sans-serif; 
         }
@@ -331,7 +329,7 @@
             top: 0;
             right: -300px;
             width: 280px;
-            height: 100vh;
+            height: 100%;
             background-color: var(--sidebar-bg);
             box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
             z-index: 100;
@@ -513,8 +511,6 @@
     </div>
 
     <script>
-        // NOTE: The main stream finding logic is now handled by the backend /api/yt.js
-
         document.addEventListener('DOMContentLoaded', () => {
             const generateBtn = document.getElementById('generate-btn');
             const formatBtns = document.querySelectorAll('.format-btn');
@@ -536,10 +532,11 @@
             const saveApiBtn = document.getElementById('save-api-btn');
             const clearApiBtn = document.getElementById('clear-api-btn');
 
-            // **API URL পরিবর্তন: নতুন ব্যাকএন্ড এন্ডপয়েন্ট ব্যবহার**
-            const API_URL = "/api/yt"; 
-            const STORAGE_KEY = 'rapidapi_key_v2'; 
+            const API_HOST = "youtube-media-downloader.p.rapidapi.com";
+            const API_URL = "https://" + API_HOST + "/v2/video/details";
+            const STORAGE_KEY = 'rapidapi_key_v2';
 
+            // ডিউরেশন ফরমেট পরিবর্তনের জন্য ফাংশন
             function formatDuration(seconds) {
                 if(!seconds) return 'N/A';
                 seconds = parseInt(seconds, 10);
@@ -557,21 +554,29 @@
                 return `${pad(m)}:${pad(s)}`;
             }
 
-            // **UI/UX: সাইডবার খোলা/বন্ধ হলে বডিতে ক্লাস যুক্ত করা**
-            menuToggle.addEventListener('click', () => {
-                sidebar.classList.add('open');
-                body.classList.add('sidebar-open');
-            });
-            closeSidebar.addEventListener('click', () => {
-                sidebar.classList.remove('open');
-                body.classList.remove('sidebar-open');
-            });
+            // open/close sidebar
+            menuToggle.addEventListener('click', () => sidebar.classList.add('open'));
+            closeSidebar.addEventListener('click', () => sidebar.classList.remove('open'));
 
+            // dark mode toggle
             darkModeToggle.addEventListener('change', () => {
                 body.classList.toggle('dark-mode', darkModeToggle.checked);
             });
-            
-            // ... (API Key UI functions, as they are not used for fetch) ...
+
+            // show/hide API input value
+            sidebarApiKeyToggle.addEventListener('click', () => {
+                if (sidebarApiKeyInput.type === 'password') {
+                    sidebarApiKeyInput.type = 'text';
+                    sidebarApiKeyToggle.classList.remove('fa-eye-slash');
+                    sidebarApiKeyToggle.classList.add('fa-eye');
+                } else {
+                    sidebarApiKeyInput.type = 'password';
+                    sidebarApiKeyToggle.classList.remove('fa-eye');
+                    sidebarApiKeyToggle.classList.add('fa-eye-slash');
+                }
+            });
+
+            // load stored key into sidebar input masked
             function maskKey(k){
                 if(!k) return '';
                 if(k.length <= 10) return k;
@@ -583,113 +588,114 @@
                 sidebarApiKeyInput.dataset.masked = 'true';
             }
 
+            // save API
             saveApiBtn.addEventListener('click', ()=>{
-                alert('API key is now managed in the Vercel Environment Variables (RAPIDAPI_KEY) for security.');
                 let val = sidebarApiKeyInput.value.trim();
                 if(!val){
+                    alert('Paste your RapidAPI key in the field (click eye to reveal full if masked).');
                     return;
                 }
+                // if masked, ask user to reveal/paste actual key
                 if(val.includes('…')){
                     const real = prompt('Your saved key looks masked. Paste the full RapidAPI key now to overwrite:');
                     if(!real) return;
                     localStorage.setItem(STORAGE_KEY, real.trim());
                     sidebarApiKeyInput.value = maskKey(real.trim());
                     sidebarApiKeyInput.dataset.masked = 'true';
-                    alert('Local key saved (for testing UI only). Remember to set RAPIDAPI_KEY on Vercel.');
+                    alert('API key saved locally.');
                 } else {
+                    // assume real key entered
                     localStorage.setItem(STORAGE_KEY, val);
                     sidebarApiKeyInput.value = maskKey(val);
                     sidebarApiKeyInput.dataset.masked = 'true';
-                    alert('Local key saved (for testing UI only). Remember to set RAPIDAPI_KEY on Vercel.');
+                    alert('API key saved locally.');
                 }
             });
 
+            // clear api
             clearApiBtn.addEventListener('click', ()=>{
                 if(confirm('Clear saved API key?')){
                     localStorage.removeItem(STORAGE_KEY);
                     sidebarApiKeyInput.value = '';
                     sidebarApiKeyInput.dataset.masked = '';
-                    alert('API key cleared locally.');
+                    alert('API key cleared.');
                 }
             });
 
-
+            // tab handling for format buttons
             formatBtns.forEach(btn=>{
                 btn.addEventListener('click', ()=>{
-                    if(initialPreview.style.display !== 'none') return;
+                    if(initialPreview.style.display !== 'none') return; // no-op until content loaded
                     formatBtns.forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                     const format = btn.getAttribute('data-format');
                     const type = btn.getAttribute('data-type');
-                    // data.streams now contains cleaned data from the backend
+                    // if we already have lastResponse stored, call renderer
                     if(window.__lastApiResponse) {
-                        renderDownloadOptionsFromResponse(window.__lastApiResponse.streams, format, type);
+                        renderDownloadOptionsFromResponse(window.__lastApiResponse, format, type);
                     }
                 });
             });
 
-
-            // **নতুন fetch logic - এরর হ্যান্ডলিং সহ**
-            async function fetchFromBackend(rawInput){
-                const encodedUrl = encodeURIComponent(rawInput);
-                // Backend এখন শুধু url param আশা করে
-                const fetchUrl = `${API_URL}?url=${encodedUrl}`;
-
-                const res = await fetch(fetchUrl);
-                let data;
-                try {
-                    data = await res.json();
-                } catch {
-                    // Handle non-JSON response (e.g., Vercel's generic 500 error page)
-                    throw new Error("Server returned an unknown error. Status: " + res.status);
-                }
-
-                // Handle errors explicitly returned by our backend
-                if (!res.ok || data.ok === false) {
-                    console.log("BACKEND FULL ERROR:", data);
-                    const msg =
-                        (data && data.error) ||
-                        (data && data.reason) ||
-                        ("HTTP " + res.status);
-                    
-                    const where = data.where || "unknown";
-                    
-                    // Show a specific alert based on the error
-                    if (where === "rapidapi") {
-                        throw new Error(`API Error: Invalid Key or Quota Exceeded. Please check RAPIDAPI_KEY on Vercel.`);
-                    }
-                    if (where === "api" && data.error.includes("RAPIDAPI_KEY")) {
-                         throw new Error(`Configuration Error: RAPIDAPI_KEY is NOT set on Vercel.`);
-                    }
-                    
-                    throw new Error(`Backend Error (${where}): ${msg}`);
-                }
-
-                return data;
-            }
-
+            // generate click -> fetch API and render
             generateBtn.addEventListener('click', async ()=>{
                 const rawUrl = youtubeUrlInput.value.trim();
                 if(!rawUrl) return alert('Please paste a YouTube URL or ID');
+                const key = localStorage.getItem(STORAGE_KEY) || null;
+                if(!key) {
+                    alert('Please set your RapidAPI key in Settings (sidebar) first.');
+                    sidebar.classList.add('open');
+                    return;
+                }
 
+                // show loading UI
                 generateBtn.textContent = 'Fetching...'; generateBtn.disabled = true;
                 downloadOptionsContainer.style.display = 'none';
                 try {
-                    // Call the robust fetch function
-                    const data = await fetchFromBackend(rawUrl);
-                    window.__lastApiResponse = data; // Store full response
+                    const vid = extractID(rawUrl);
+                    if(!vid) throw new Error('Invalid YouTube URL/ID');
 
-                    // Render Metadata (uses cleaned data from backend)
-                    const title = data.title || 'Untitled';
-                    const durationSecs = data.lengthSeconds || null;
-                    const viewCount = data.viewCount || null;
+                    const qs = new URLSearchParams({ videoId: vid, urlAccess:'normal', videos:'auto', audios:'auto' });
+                    const resp = await fetch(API_URL + '?' + qs.toString(), {
+                        method: 'GET',
+                        headers: {
+                            'x-rapidapi-host': API_HOST,
+                            'x-rapidapi-key': key
+                        }
+                    });
+
+                    if(!resp.ok){
+                        const txt = await resp.text();
+                        console.error('API error', resp.status, txt);
+                        throw new Error('API request failed: ' + resp.status);
+                    }
+
+                    const data = await resp.json();
+                    // store globally for tab switching
+                    window.__lastApiResponse = data;
+                    console.log('API response', data);
+
+                    // handle errors in response
+                    if(data && data.errorId && data.errorId !== 'Success'){
+                        alert('API returned error: ' + (data.reason || data.errorId));
+                        generateBtn.textContent = 'Generate Video Content'; generateBtn.disabled = false;
+                        return;
+                    }
+
+                    // render meta
+                    const title = data.title || data.name || 'Untitled';
+                    const durationSecs = data.lengthSeconds || data.duration || data.durationSeconds || null;
+                    
+                    // ভিউ কাউন্ট: ইংরেজি (US) ফরমেটে
+                    const viewCount = data.viewCount || data.viewCountText || null;
                     const viewsText = viewCount ? new Intl.NumberFormat('en-US').format(viewCount) : '';
                     
-                    const thumbsArr = (data.thumbnails && data.thumbnails.length) ? data.thumbnails : [];
-                    const bestThumb = (thumbsArr.length) ? (thumbsArr[thumbsArr.length-1].url || '') : '';
+                    const thumbsArr = (data.thumbnails && data.thumbnails.length) ? data.thumbnails : (data.thumbnails || []);
+                    const bestThumb = (thumbsArr.length) ? (thumbsArr[thumbsArr.length-1].url || thumbsArr[thumbsArr.length-1].thumb || '') : (data.thumbnail || '');
 
                     videoTitle.textContent = title;
                     
+                    // **ছবি অনুযায়ী ডিউরেশন বামে এবং ভিউজ ডানে সেট করা**
                     const formattedDuration = formatDuration(durationSecs);
                     
                     videoDurationContainer.innerHTML = `
@@ -702,72 +708,155 @@
                     initialPreview.style.display = 'none';
                     loadedPreview.style.display = 'block';
 
-                    // Render default format (mp4) using cleaned streams
-                    renderDownloadOptionsFromResponse(data.streams, 'mp4', 'video');
+                    // render default format (mp4)
+                    renderDownloadOptionsFromResponse(data, 'mp4', 'video');
 
                 } catch (err) {
                     console.error(err);
-                    alert(err.message);
+                    alert('Failed to fetch video info: ' + err.message);
                 } finally {
                     generateBtn.textContent = 'Generate Video Content'; generateBtn.disabled = false;
                 }
             });
 
-            // Helper functions (same as before)
-            function safe(u){
-                return String(u||'').replace(/"/g,'&quot;').replace(/'/g,"'");
+            // function: extract id from URL or accept direct id
+            function extractID(x){
+                if(!x) return null;
+                if(/^[A-Za-z0-9_-]{8,}$/.test(x) && !x.includes('/')) return x;
+                try {
+                    const u = new URL(x);
+                    if(u.hostname.includes('youtu.be')) return u.pathname.slice(1);
+                    if(u.hostname.includes('youtube.com')){
+                        const v = u.searchParams.get('v');
+                        if(v) return v;
+                        const parts = u.pathname.split('/');
+                        const i = parts.indexOf('embed');
+                        if(i>=0 && parts[i+1]) return parts[i+1];
+                    }
+                } catch(e){}
+                return null;
             }
 
-            function makeRow(it){
-                const url = it.url || it.downloadUrl || it.streamUrl || it.mediaUrl || it.source || it.link || '';
-                const quality = it.quality || (it.height? (it.height + 'p') : '');
-                const ext = it.extension || (it.mimeType ? it.mimeType.split(';')[0].split('/').pop() : 'BIN');
-                const size = it.size || it.sizeText || '';
-                
-                return `
-                    <div class="download-item">
-                        <div class="item-details">
-                            <span class="format-tag">${ext ? ext.toUpperCase() : ''}</span>
-                            <span style="margin-right:10px;font-weight:700">${quality}</span>
-                            <span class="size" style="color:${size? 'var(--text-dark)': 'var(--text-medium)'}">${size ? size : ''}</span>
-                        </div>
-                        <div style="display:flex;gap:8px;align-items:center">
-                            ${url ? `<a class="download-btn-small" href="${safe(url)}" target="_blank" rel="noreferrer"><i class="fas fa-download"></i> Download</a>` : '<span style="color:var(--text-medium)">No URL</span>'}
-                        </div>
-                    </div>
-                `;
+            // helper to check if stream is audio only
+            function isAudioOnly(it){
+                // Check for known audio mime/ext or known itag (140)
+                return (it.mimeType||'').toLowerCase().includes('audio/') || (it.extension||'').toLowerCase().includes('m4a') || (it.extension||'').toLowerCase().includes('mp3') || it.itag==140;
+            }
+            
+            // helper to sort by resolution (small -> large)
+            function parseRes(it){
+                if(it.height) return Number(it.height);
+                const q = (it.quality_label || it.quality || '').toString();
+                const m = q.match(/(\d{2,4})p/);
+                if(m) return Number(m[1]);
+                return 0;
+            }
+            function sortAsc(list){ 
+                return list.filter(item => item.url).sort((a,b)=> parseRes(a)-parseRes(b) ); 
             }
 
 
-            // render function: now accepts cleaned 'streams' object
-            function renderDownloadOptionsFromResponse(streams, format, type){
+            // render function: take API response and format selection and fill downloadOptionsContainer
+            function renderDownloadOptionsFromResponse(data, format, type){
                 downloadOptionsContainer.innerHTML = '';
                 downloadOptionsContainer.style.display = 'none';
 
-                if(!streams) return;
+                if(!data) return;
 
-                let chosenList = [];
-                let fallbackList = [];
+                // collect possible arrays that may contain streams
+                const lists = [];
+                if(data.videos && Array.isArray(data.videos.items)) lists.push(...data.videos.items);
+                ['medias','formats','streams','results','downloads','videoStreams','audioStreams','items'].forEach(k=>{
+                    if(Array.isArray(data[k])) lists.push(...data[k]);
+                });
+
+                const fallbackUrl = data.url || data.videoUrl || data.downloadUrl || data.source || data.downloadURL || null;
+
+                // ডুপ্লিকেট ফরম্যাট অপসারণ
+                const uniqueStreams = new Map();
+                lists.forEach(it=>{
+                    const u = it.url || it.downloadUrl || it.streamUrl || it.mediaUrl || it.source || it.link;
+                    const q = it.quality || it.quality_label || (it.height? (it.height + 'p') : '') || (it.format || '');
+                    const key = u + '-' + q;
+                    if(u && !uniqueStreams.has(key)) uniqueStreams.set(key, it);
+                });
+                
+                if(fallbackUrl && !uniqueStreams.has(fallbackUrl)) uniqueStreams.set(fallbackUrl, { url: fallbackUrl });
+                const streamArr = Array.from(uniqueStreams.values());
+
+                
+                // **অডিও-অনলি স্ট্রিম**
+                const audios = streamArr.filter(it => isAudioOnly(it)); 
+
+                // **ভিডিও এবং অডিও স্ট্রিম ফিল্টারিং (MP4 অডিও ফিক্স)**
+                const mp4s_raw = streamArr.filter(it => (it.mimeType||'').toLowerCase().includes('video/mp4') || (it.extension||'').toLowerCase().includes('mp4'));
+                
+                // **MP4 ফিল্টারিং কঠোর করা:** কম্বাইন্ড স্ট্রিমগুলির জন্য
+                const mp4s = mp4s_raw.filter(it => {
+                    const res = parseRes(it);
+                    const hasAudioProperty = (it.audioBitrate || it.audioEncoding || it.hasAudio === true);
+                    
+                    // 1. যদি explicitly অডিও প্রপার্টি থাকে এবং অডিও অনলি না হয় (API থেকে ইঙ্গিত)
+                    if (hasAudioProperty && !isAudioOnly(it)) return true;
+
+                    // 2. যদি রেজোলিউশন 480p এর নিচে হয় (সাধারণত ইউটিউব এই স্ট্রিমগুলি মিক্স করে)
+                    if (res > 0 && res <= 480 && !isAudioOnly(it)) return true;
+
+                    // 3. 720p/1080p শুধুমাত্র তখনই দেখাও যদি API স্পষ্টভাবে hasAudio=true বা AudioBitrate দেয়।
+                    if (res > 480 && (it.hasAudio === true || it.audioBitrate) && !isAudioOnly(it)) return true;
+
+                    return false;
+                });
+                
+                // WebM স্ট্রিম
+                const webms = streamArr.filter(it => (it.mimeType||'').toLowerCase().includes('video/webm') || (it.extension||'').toLowerCase().includes('webm'));
+
+
+                const mp4sS = sortAsc(mp4s);
+                const webmsS = sortAsc(webms);
+                const audiosS = audios.filter(item => item.url); 
+
+                // আইকন সহ হেডার যোগ করা
                 let headerHtml = '';
+                if(format === 'mp4') headerHtml = '<h3><i class="fas fa-video"></i> MP4 Download Options (Audio Included)</h3>';
+                else if(format === 'webm') headerHtml = '<h3><i class="fas fa-video"></i> WebM Download Options</h3>';
+                else if(format === 'mp3') headerHtml = '<h3><i class="fas fa-music"></i> MP3 Audio Download Options</h3>';
+                else if(format === 'thumbnail') headerHtml = '<h3><i class="fas fa-image"></i> Thumbnail Download Options</h3>';
+                
+                let html = '';
 
-                // Determine the chosen list and header
-                if(format === 'mp4') {
-                    headerHtml = '<h3><i class="fas fa-video"></i> MP4 Download Options (Audio Preferred)</h3>';
-                    chosenList = streams.mp4 || [];
-                } else if(format === 'webm') {
-                    headerHtml = '<h3><i class="fas fa-video"></i> WebM Download Options</h3>';
-                    chosenList = streams.webm || [];
-                } else if(format === 'mp3') {
-                    headerHtml = '<h3><i class="fas fa-music"></i> MP3 Audio Download Options</h3>';
-                    chosenList = streams.audio || [];
-                    fallbackList = [...(streams.mp4 || []), ...(streams.webm || [])];
-                } else if(format === 'thumbnail') {
-                    headerHtml = '<h3><i class="fas fa-image"></i> Thumbnail Download Options</h3>';
-                    
-                    const data = window.__lastApiResponse;
+                // If selected format is mp4 -> list mp4s
+                if(format === 'mp4'){
+                    html += headerHtml;
+                    if(mp4sS.length){
+                        mp4sS.forEach(it=> html += makeRow(it));
+                    } else {
+                        html += '<div class="small" style="color:var(--text-medium);padding:10px 0;">No guaranteed audio/video combined MP4 formats found. Try WebM or Audio.</div>';
+                    }
+                } else if(format === 'webm'){
+                    html += headerHtml;
+                    if(webmsS.length){
+                        webmsS.forEach(it=> html += makeRow(it));
+                    } else {
+                        html += '<div class="small" style="color:var(--text-medium);padding:10px 0;">No WebM video formats found.</div>';
+                    }
+                } else if(format === 'mp3'){
+                    html += headerHtml;
+                    if(audiosS.length){
+                        audiosS.forEach(it=> html += makeRow(it));
+                    } else {
+                        // যদি অডিও-অনলি স্ট্রীম না থাকে, তাহলে Combine Stream দেখানোর বিকল্প:
+                        if(mp4sS.length > 0 || webmsS.length > 0){
+                            html += '<div class="small" style="color:var(--text-medium);padding:10px 0;">No audio-only streams found. You may download a combined Video/Audio stream below.</div>';
+                            sortAsc([...mp4sS, ...webmsS]).forEach(it=> html += makeRow(it));
+                        } else {
+                            html += '<div class="small" style="color:var(--text-medium);padding:10px 0;">No audio formats found.</div>';
+                        }
+                    }
+                } else if(format === 'thumbnail'){
+                    // thumbnails from data.thumbnails
+                    html += headerHtml;
                     const thumbs = (data.thumbnails && data.thumbnails.length) ? data.thumbnails : (data.thumbnail ? [{ url: data.thumbnail }] : []);
-                    
-                    let html = headerHtml;
                     if(thumbs.length){
                         thumbs.forEach(t => {
                             const u = t.url || t.thumb || '';
@@ -786,65 +875,61 @@
                     } else {
                         html += '<div class="small" style="color:var(--text-medium)">No thumbnails found.</div>';
                     }
-                    downloadOptionsContainer.innerHTML = html;
-                    
-                    const items = downloadOptionsContainer.querySelectorAll('.download-item');
-                    if(items.length > 0) {
-                        items[items.length - 1].style.borderBottom = 'none';
-                    }
-                    return;
-                }
-                
-                // Render selected lists (MP4/WebM/Audio)
-                
-                let html = headerHtml;
-                if(chosenList.length){
-                    chosenList.forEach(it=> html += makeRow(it));
-                } else {
-                    html += '<div class="small" style="color:var(--text-medium);padding:10px 0;">No formats found.</div>';
                 }
 
-                // MP3 fallback logic
-                if(format === 'mp3' && chosenList.length === 0 && fallbackList.length > 0){
-                    const uniqueFallback = [];
-                    const seenUrls = new Set();
-                    fallbackList.forEach(item => {
-                        if (item.url && !seenUrls.has(item.url)) {
-                            seenUrls.add(item.url);
-                            uniqueFallback.push(item);
-                        }
-                    });
-
-                    html += '<div class="small" style="color:var(--text-medium);padding:10px 0;">No dedicated audio streams found. Showing combined video/audio streams as fallback.</div>';
-                    uniqueFallback.forEach(it=> html += makeRow(it));
-                }
+                // show raw JSON toggle for debug
+                html += `<div style="margin-top:12px;text-align:center;"><button id="showRawBtn" class="download-btn-small" style="background:transparent;color:var(--text-dark);border:1px solid var(--card-border-grey)"><i class="fas fa-code"></i> Show raw JSON (console too)</button></div>`;
 
                 downloadOptionsContainer.innerHTML = html;
-                
-                // Final touch (raw JSON button and last border removal)
-                const data = window.__lastApiResponse;
-                html += `<div style="margin-top:12px;text-align:center;"><button id="showRawBtn" class="download-btn-small" style="background:transparent;color:var(--text-dark);border:1px solid var(--card-border-grey)"><i class="fas fa-code"></i> Show raw JSON (console too)</button></div>`;
-                downloadOptionsContainer.innerHTML = html; 
-                
+                downloadOptionsContainer.style.display = 'block';
+
+                // attach showRaw handler
                 const rawBtn = document.getElementById('showRawBtn');
                 if(rawBtn){
                     rawBtn.addEventListener('click', ()=>{
-                        console.log('RAW PROCESSED RESPONSE:', data);
+                        console.log('RAW API RESPONSE:', data);
                         alert('Raw JSON logged to console. Open DevTools (Console) to inspect.');
                     });
                 }
                 
+                // শেষ ডাউনলোড আইটেম থেকে বর্ডার রিমুভ করা
                 const items = downloadOptionsContainer.querySelectorAll('.download-item');
                 if(items.length > 0) {
                     items[items.length - 1].style.borderBottom = 'none';
                 }
-
-                downloadOptionsContainer.style.display = 'block';
             }
 
+            // helper to escape URL in attributes
+            function safe(u){
+                return String(u||'').replace(/"/g,'&quot;').replace(/'/g,"'");
+            }
+
+            // ডাউনলোড বাটন তৈরি
+            function makeRow(it){
+                const url = it.url || it.downloadUrl || it.streamUrl || it.mediaUrl || it.source || it.link || '';
+                const quality = it.quality || it.quality_label || (it.height? (it.height + 'p') : '') || (it.format || '');
+                const ext = it.extension || (it.mimeType ? it.mimeType.split(';')[0].split('/').pop() : 'BIN');
+                const size = it.sizeText || it.size || it.filesize || it.data_size || '';
+                
+                return `
+                    <div class="download-item">
+                        <div class="item-details">
+                            <span class="format-tag">${ext ? ext.toUpperCase() : ''}</span>
+                            <span style="margin-right:10px;font-weight:700">${quality}</span>
+                            <span class="size" style="color:${size? 'var(--text-dark)': 'var(--text-medium)'}">${size ? size : ''}</span>
+                        </div>
+                        <div style="display:flex;gap:8px;align-items:center">
+                            ${url ? `<a class="download-btn-small" href="${safe(url)}" target="_blank" rel="noreferrer"><i class="fas fa-download"></i> Download</a>` : '<span style="color:var(--text-medium)">No URL</span>'}
+                        </div>
+                    </div>
+                `;
+            }
+
+            // initial state: hide loaded preview
             initialPreview.style.display = 'flex';
             loadedPreview.style.display = 'none';
 
+            // clear the youtube input by default
             youtubeUrlInput.value = "";
 
         });
