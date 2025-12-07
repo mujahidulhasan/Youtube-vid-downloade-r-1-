@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
     <style>
-        /* (CSS Styles are kept from the final UI/UX version) */
+        /* (All CSS styles, including UI/UX fixes, are kept from the previous final version) */
         * {
             margin: 0;
             padding: 0;
@@ -513,7 +513,7 @@
     </div>
 
     <script>
-        // NOTE: The heavy lifting logic is now moved to /api/yt.js
+        // NOTE: The main stream finding logic is now handled by the backend /api/yt.js
 
         document.addEventListener('DOMContentLoaded', () => {
             const generateBtn = document.getElementById('generate-btn');
@@ -630,13 +630,12 @@
 
 
             // **নতুন fetch logic - এরর হ্যান্ডলিং সহ**
-            async function fetchFromBackend(videoUrlOrId){
-                // Check if input is likely a short ID or a full URL
-                const isId = /^[A-Za-z0-9_-]{8,}$/.test(videoUrlOrId) && !videoUrlOrId.includes('/');
-                const param = isId ? ("videoId=" + encodeURIComponent(videoUrlOrId))
-                                : ("url=" + encodeURIComponent(videoUrlOrId));
+            async function fetchFromBackend(rawInput){
+                const encodedUrl = encodeURIComponent(rawInput);
+                // Backend এখন শুধু url param আশা করে
+                const fetchUrl = `${API_URL}?url=${encodedUrl}`;
 
-                const res = await fetch(API_URL + "?" + param);
+                const res = await fetch(fetchUrl);
                 let data;
                 try {
                     data = await res.json();
@@ -714,6 +713,31 @@
                 }
             });
 
+            // Helper functions (same as before)
+            function safe(u){
+                return String(u||'').replace(/"/g,'&quot;').replace(/'/g,"'");
+            }
+
+            function makeRow(it){
+                const url = it.url || it.downloadUrl || it.streamUrl || it.mediaUrl || it.source || it.link || '';
+                const quality = it.quality || (it.height? (it.height + 'p') : '');
+                const ext = it.extension || (it.mimeType ? it.mimeType.split(';')[0].split('/').pop() : 'BIN');
+                const size = it.size || it.sizeText || '';
+                
+                return `
+                    <div class="download-item">
+                        <div class="item-details">
+                            <span class="format-tag">${ext ? ext.toUpperCase() : ''}</span>
+                            <span style="margin-right:10px;font-weight:700">${quality}</span>
+                            <span class="size" style="color:${size? 'var(--text-dark)': 'var(--text-medium)'}">${size ? size : ''}</span>
+                        </div>
+                        <div style="display:flex;gap:8px;align-items:center">
+                            ${url ? `<a class="download-btn-small" href="${safe(url)}" target="_blank" rel="noreferrer"><i class="fas fa-download"></i> Download</a>` : '<span style="color:var(--text-medium)">No URL</span>'}
+                        </div>
+                    </div>
+                `;
+            }
+
 
             // render function: now accepts cleaned 'streams' object
             function renderDownloadOptionsFromResponse(streams, format, type){
@@ -728,12 +752,14 @@
 
                 // Determine the chosen list and header
                 if(format === 'mp4') {
-                    headerHtml = '<h3><i class="fas fa-video"></i> MP4 Download Options (High-res may lack audio)</h3>';
+                    // Backend now filters mp4 for high probability of audio
+                    headerHtml = '<h3><i class="fas fa-video"></i> MP4 Download Options (Audio Preferred)</h3>';
                     chosenList = streams.mp4 || [];
                 } else if(format === 'webm') {
-                    headerHtml = '<h3><i class="fas fa-video"></i> WebM Download Options (High-res may lack audio)</h3>';
+                    headerHtml = '<h3><i class="fas fa-video"></i> WebM Download Options</h3>';
                     chosenList = streams.webm || [];
                 } else if(format === 'mp3') {
+                    // Audio-only streams
                     headerHtml = '<h3><i class="fas fa-music"></i> MP3 Audio Download Options</h3>';
                     chosenList = streams.audio || [];
                     fallbackList = [...(streams.mp4 || []), ...(streams.webm || [])];
@@ -798,13 +824,14 @@
                 downloadOptionsContainer.innerHTML = html;
                 
                 // Final touch (raw JSON button and last border removal)
+                const data = window.__lastApiResponse;
                 html += `<div style="margin-top:12px;text-align:center;"><button id="showRawBtn" class="download-btn-small" style="background:transparent;color:var(--text-dark);border:1px solid var(--card-border-grey)"><i class="fas fa-code"></i> Show raw JSON (console too)</button></div>`;
                 downloadOptionsContainer.innerHTML = html; 
                 
                 const rawBtn = document.getElementById('showRawBtn');
                 if(rawBtn){
                     rawBtn.addEventListener('click', ()=>{
-                        console.log('RAW PROCESSED RESPONSE:', window.__lastApiResponse);
+                        console.log('RAW PROCESSED RESPONSE:', data);
                         alert('Raw JSON logged to console. Open DevTools (Console) to inspect.');
                     });
                 }
@@ -815,30 +842,6 @@
                 }
 
                 downloadOptionsContainer.style.display = 'block';
-            }
-
-            function safe(u){
-                return String(u||'').replace(/"/g,'&quot;').replace(/'/g,"'");
-            }
-
-            function makeRow(it){
-                const url = it.url || it.downloadUrl || it.streamUrl || it.mediaUrl || it.source || it.link || '';
-                const quality = it.quality || (it.height? (it.height + 'p') : '');
-                const ext = it.extension || (it.mimeType ? it.mimeType.split(';')[0].split('/').pop() : 'BIN');
-                const size = it.size || it.sizeText || '';
-                
-                return `
-                    <div class="download-item">
-                        <div class="item-details">
-                            <span class="format-tag">${ext ? ext.toUpperCase() : ''}</span>
-                            <span style="margin-right:10px;font-weight:700">${quality}</span>
-                            <span class="size" style="color:${size? 'var(--text-dark)': 'var(--text-medium)'}">${size ? size : ''}</span>
-                        </div>
-                        <div style="display:flex;gap:8px;align-items:center">
-                            ${url ? `<a class="download-btn-small" href="${safe(url)}" target="_blank" rel="noreferrer"><i class="fas fa-download"></i> Download</a>` : '<span style="color:var(--text-medium)">No URL</span>'}
-                        </div>
-                    </div>
-                `;
             }
 
             initialPreview.style.display = 'flex';
